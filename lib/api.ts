@@ -111,7 +111,7 @@ export async function autoRentPhoneNumber() {
 export async function getSessionMessages(sessionId: string) {
   try {
     // Doğru API endpoint'i kullanarak mesajları al
-    const response = await apiRequest("/sms/message/get", "POST", {
+    const response = await apiRequest("/sms/session", "POST", {
       sessionId: sessionId,
     })
 
@@ -145,7 +145,7 @@ export async function getSessionMessages(sessionId: string) {
 // Get session details
 export async function getSessionDetails(sessionId: string) {
   try {
-    const response = await apiRequest("/sms/session/get", "POST", {
+    const response = await apiRequest("/sms/session", "POST", {
       id: sessionId,
     })
 
