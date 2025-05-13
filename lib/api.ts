@@ -107,40 +107,30 @@ export async function autoRentPhoneNumber() {
   }
 }
 
-// Get messages for a session - UPDATED to use the correct API endpoint
 export async function getSessionMessages(sessionId: string) {
   try {
-    // Doğru API endpoint'i kullanarak mesajları al
+    // Doğru parametre adı: id
     const response = await apiRequest("/sms/session", "POST", {
-      sessionId: sessionId,
-    })
+      id: sessionId,
+    });
 
-    if (!response.result?.messages) {
-      console.warn("No messages found in response:", response)
-      return []
+    // Gelen SMS mesajları response.result.messages içinde
+    const messages = response.result?.messages;
+
+    if (!messages || !Array.isArray(messages)) {
+      console.warn("Mesaj bulunamadı:", response);
+      return [];
     }
 
-    return response.result.messages || []
+    return messages;
   } catch (error) {
-    console.error("Error fetching session messages:", error)
+    console.error("Oturuma ait SMS mesajları alınırken hata oluştu:", error);
 
-    // Return mock data for fallback/demo - Yemeksepeti themed
-    return [
-      {
-        id: "m1",
-        sender: "Yemeksepeti",
-        content: "Yemeksepeti'ye hoş geldiniz! Doğrulama kodunuz: 123456",
-        receivedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
-      },
-      {
-        id: "m2",
-        sender: "Yemeksepeti",
-        content: "Siparişiniz alındı! Takip kodu: XYZ123. Siparişinizi uygulamamızdan takip edebilirsiniz.",
-        receivedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
-      },
-    ]
+    // Opsiyonel: fallback veri döndürülebilir
+    return [];
   }
 }
+
 
 // Get session details
 export async function getSessionDetails(sessionId: string) {
