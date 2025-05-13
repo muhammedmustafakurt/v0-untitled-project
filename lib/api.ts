@@ -109,24 +109,33 @@ export async function autoRentPhoneNumber() {
 
 export async function getSessionMessages(sessionId: string) {
   try {
-    // Dökümantasyona göre doğru endpoint ve parametre adı
-    const response = await apiRequest("/sms/messages", "GET", {
-      session_id: sessionId,
+    // Düzeltilmiş versiyon - GET isteği için parametreleri URL'ye ekleyin
+    const response = await fetch(`${API_BASE_URL}/sms/messages?session_id=${sessionId}`, {
+      method: "GET",
+      headers: {
+        'Authorization': `Bearer ${API_SECRET}`,
+        'Content-Type': 'application/json'
+      },
+      cache: "no-store"
     });
 
-    // Gelen SMS mesajları response.result.messages içinde
-    const messages = response.result?.messages;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error: ${errorText}`);
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const messages = data.result?.messages;
 
     if (!messages || !Array.isArray(messages)) {
-      console.warn("Mesaj bulunamadı:", response);
+      console.warn("Mesaj bulunamadı:", data);
       return [];
     }
 
     return messages;
   } catch (error) {
     console.error("Oturuma ait SMS mesajları alınırken hata oluştu:", error);
-
-    // Opsiyonel: fallback veri döndürülebilir
     return [];
   }
 }
@@ -136,7 +145,7 @@ export async function getSessionMessages(sessionId: string) {
 export async function getSessionDetails(sessionId: string) {
   try {
     const response = await apiRequest("/sms/session", "POST", {
-      id: sessionId,
+      sessionId: sessionId // 
     })
 
     if (!response.result?.session) {
