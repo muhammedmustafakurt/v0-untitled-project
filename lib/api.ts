@@ -109,9 +109,9 @@ export async function autoRentPhoneNumber() {
 
 export async function getSessionMessages(sessionId: string) {
   try {
-    // Doğru parametre adı: id
-    const response = await apiRequest("/sms/session", "POST", {
-      id: sessionId,
+    // Dökümantasyona göre doğru endpoint ve parametre adı
+    const response = await apiRequest("/sms/messages", "GET", {
+      session_id: sessionId,
     });
 
     // Gelen SMS mesajları response.result.messages içinde
