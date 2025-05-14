@@ -107,16 +107,16 @@ export async function autoRentPhoneNumber() {
   }
 }
 
-export async function getSessionMessages(sessionId: string) {
+export async function getSessionDetails(sessionId: string) {
   try {
-    const response = await fetch(`/sms/session/list`, {
-      method: "POST",
+    const response = await fetch(`https://api.verifynow.net/sms/session`, {
+      method: "POST", // GET değil, POST olmalı
       headers: {
         'Authorization': `Bearer ${API_SECRET}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        session_id: sessionId
+        sessionId: sessionId // API örneğinde "sessionId" (camelCase) kullanılıyor, "session_id" değil
       }),
       cache: "no-store"
     });
@@ -129,16 +129,16 @@ export async function getSessionMessages(sessionId: string) {
 
     const data = await response.json();
     
-    // Dokümana göre response yapısı kontrol ediliyor
-    if (!data || !data.data || !Array.isArray(data.data)) {
-      console.warn("Mesaj bulunamadı veya beklenen formatta değil:", data);
-      return [];
+    // Yanıt formatını API örneğine göre kontrol ediyoruz
+    if (!data || !data.result || !data.result.session) {
+      console.warn("Oturum detayı bulunamadı veya beklenen formatta değil:", data);
+      return null;
     }
 
-    return data.data;
+    return data.result.session; // "session" objesini döndürüyoruz
   } catch (error) {
-    console.error("Oturuma ait SMS mesajları alınırken hata oluştu:", error);
-    return [];
+    console.error("Oturum detayları alınırken hata oluştu:", error);
+    return null;
   }
 }
 
