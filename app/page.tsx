@@ -1,32 +1,12 @@
 import Link from "next/link"
 import { AutoRentNumber } from "@/components/auto-rent-number"
 import { ShoppingBagIcon, CheckCircleIcon, ShieldCheckIcon, ClockIcon } from "lucide-react"
+import { Header } from "@/components/header"
 
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="border-b bg-red-600 text-white">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <ShoppingBagIcon className="h-6 w-6 text-white" />
-            <h1 className="text-xl font-bold">Yemeksepeti Doğrulama</h1>
-          </div>
-          <nav>
-            <ul className="flex gap-6">
-              <li>
-                <Link href="/" className="font-medium text-white hover:text-red-100">
-                  Ana Sayfa
-                </Link>
-              </li>
-              <li>
-                <Link href="/demo-messages" className="font-medium text-white hover:text-red-100">
-                  Demo Mesajlar
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-1">
         <section className="bg-gradient-to-b from-red-50 to-white py-20">

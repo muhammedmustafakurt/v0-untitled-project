@@ -7,6 +7,7 @@ import { PhoneIcon, Loader2Icon, CheckCircleIcon, RefreshCwIcon, CopyIcon } from
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { autoRentNumber } from "@/lib/api-client"
+import { useAuth } from "@/lib/hooks/use-auth"
 
 export function AutoRentNumber() {
   const [loading, setLoading] = useState(false)
@@ -15,6 +16,7 @@ export function AutoRentNumber() {
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const { user } = useAuth()
 
   const handleRentNumber = async () => {
     setLoading(true)
@@ -28,10 +30,20 @@ export function AutoRentNumber() {
         setPhoneNumber(formattedNumber)
         setSessionId(result.id.toString())
 
-        // Store session in localStorage and cookies
-        const existingSessions = JSON.parse(localStorage.getItem("sessions") || "[]")
-        localStorage.setItem("sessions", JSON.stringify([...existingSessions, result.id.toString()]))
-        document.cookie = `sessions=${JSON.stringify([...existingSessions, result.id.toString()])}; path=/; max-age=86400`
+        // If user is logged in, save the session to their account
+        if (user) {
+          try {
+            await fetch("/api/user/sessions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ sessionId: result.id.toString() }),
+            })
+          } catch (error) {
+            console.error("Error saving session to user account:", error)
+          }
+        }
 
         toast({
           title: "Numara başarıyla kiralandı!",
