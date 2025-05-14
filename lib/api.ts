@@ -109,13 +109,15 @@ export async function autoRentPhoneNumber() {
 
 export async function getSessionMessages(sessionId: string) {
   try {
-    // Düzeltilmiş versiyon - GET isteği için parametreleri URL'ye ekleyin
-    const response = await fetch(`${API_BASE_URL}/sms/messages?session_id=${sessionId}`, {
-      method: "GET",
+    const response = await fetch(`/sms/session/list`, {
+      method: "POST",
       headers: {
         'Authorization': `Bearer ${API_SECRET}`,
         'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        session_id: sessionId
+      }),
       cache: "no-store"
     });
 
@@ -126,14 +128,14 @@ export async function getSessionMessages(sessionId: string) {
     }
 
     const data = await response.json();
-    const messages = data.result?.messages;
-
-    if (!messages || !Array.isArray(messages)) {
-      console.warn("Mesaj bulunamadı:", data);
+    
+    // Dokümana göre response yapısı kontrol ediliyor
+    if (!data || !data.data || !Array.isArray(data.data)) {
+      console.warn("Mesaj bulunamadı veya beklenen formatta değil:", data);
       return [];
     }
 
-    return messages;
+    return data.data;
   } catch (error) {
     console.error("Oturuma ait SMS mesajları alınırken hata oluştu:", error);
     return [];
