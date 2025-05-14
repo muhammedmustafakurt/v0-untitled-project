@@ -2,51 +2,74 @@
 
 // Client-side API functions that call server actions
 export async function autoRentNumber() {
-  const response = await fetch("/api/auto-rent", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
+  try {
+    const response = await fetch("/api/auto-rent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }))
-    throw new Error(error.message || "Failed to rent number")
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+      throw new Error(errorData.error || "Failed to rent number")
+    }
+
+    const data = await response.json()
+    console.log("Auto rent response:", data)
+    return data
+  } catch (error) {
+    console.error("Error in autoRentNumber client function:", error)
+    throw error
   }
-
-  return response.json()
 }
 
 export async function getMessages(sessionId: string) {
-  const response = await fetch(`/api/messages/${sessionId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    // Ensure we're not caching the response
-    cache: "no-store",
-  })
+  try {
+    console.log(`Client: Mesajlar alınıyor, sessionId: ${sessionId}`)
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }))
-    throw new Error(error.message || "Failed to get messages")
+    const response = await fetch(`/api/messages/${sessionId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // Ensure we're not caching the response
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }))
+      throw new Error(error.message || "Failed to get messages")
+    }
+
+    const data = await response.json()
+    console.log("Client: Alınan mesajlar:", data)
+    return data
+  } catch (error) {
+    console.error("Error in getMessages client function:", error)
+    // Return empty array instead of throwing to prevent UI crashes
+    return []
   }
-
-  return response.json()
 }
 
 export async function getSessionDetails(sessionId: string) {
-  const response = await fetch(`/api/session/${sessionId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
+  try {
+    const response = await fetch(`/api/session/${sessionId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }))
-    throw new Error(error.message || "Failed to get session details")
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }))
+      throw new Error(error.message || "Failed to get session details")
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error("Error in getSessionDetails client function:", error)
+    // Return null instead of throwing to prevent UI crashes
+    return null
   }
-
-  return response.json()
 }

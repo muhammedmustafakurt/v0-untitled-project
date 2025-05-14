@@ -37,27 +37,11 @@ async function apiRequest(endpoint: string, method = "POST", body: any = {}) {
     }
 
     const data = await response.json()
+    console.log(`API Response data:`, data)
     return data
   } catch (error) {
     console.error("API request error:", error)
     throw error
-  }
-}
-
-// Get a default country ID (Turkey for YemekSepeti)
-export async function getDefaultCountry() {
-  try {
-    // Direkt olarak Türkiye ID'sini kullanıyoruz
-    return {
-      id: TURKEY_COUNTRY_ID,
-      name: "Turkey",
-      isoCode: "TR",
-      phonePrefix: "90",
-    }
-  } catch (error) {
-    console.error("Error getting default country:", error)
-    // Return a mock country for fallback
-    return { id: TURKEY_COUNTRY_ID, name: "Turkey", isoCode: "TR", phonePrefix: "90" }
   }
 }
 
@@ -69,6 +53,8 @@ export async function autoRentPhoneNumber() {
       serviceId: YEMEKSEPETI_SERVICE_ID, // Yemeksepeti service ID
     })
 
+    console.log("Auto rent response:", response)
+
     if (!response.result?.session) {
       console.warn("No session found in response:", response)
       throw new Error("Failed to create session")
@@ -77,7 +63,8 @@ export async function autoRentPhoneNumber() {
     const session = response.result.session
 
     return {
-      ...session,
+      id: session.id,
+      phoneNumber: session.phoneNumber,
       country: {
         name: "Turkey",
         isoCode: "TR",
@@ -86,113 +73,115 @@ export async function autoRentPhoneNumber() {
       platform: {
         name: "Yemeksepeti",
       },
-    }
-  } catch (error) {
-    console.error("Error auto-renting phone number:", error)
-
-    // Return mock data for fallback/demo
-    return {
-      id: `session-${Date.now()}`,
-      phoneNumber: "+90 555 123 4567",
-      country: {
-        name: "Turkey",
-        isoCode: "TR",
-      },
-      platform: {
-        name: "Yemeksepeti",
-      },
       expiresAt: new Date(Date.now() + 1000 * 60 * 30).toISOString(), // 30 minutes (1800 seconds) as per JSON
       messageCount: 0,
     }
-  }
-}
-
-export async function getSessionDetails(sessionId: string) {
-  try {
-    const response = await fetch(`https://api.verifynow.net/sms/session`, {
-      method: "POST", // GET değil, POST olmalı
-      headers: {
-        'Authorization': `Bearer ${API_SECRET}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sessionId: sessionId // API örneğinde "sessionId" (camelCase) kullanılıyor, "session_id" değil
-      }),
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API Error: ${errorText}`);
-      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    
-    // Yanıt formatını API örneğine göre kontrol ediyoruz
-    if (!data || !data.result || !data.result.session) {
-      console.warn("Oturum detayı bulunamadı veya beklenen formatta değil:", data);
-      return null;
-    }
-
-    return data.result.session; // "session" objesini döndürüyoruz
   } catch (error) {
-    console.error("Oturum detayları alınırken hata oluştu:", error);
-    return null;
+    console.error("Error auto-renting phone number:", error)
+    throw error
   }
 }
-
 
 // Get session details
 export async function getSessionDetails(sessionId: string) {
   try {
+    // Doğru API endpoint'i ve parametreleri kullanarak oturum detaylarını al
     const response = await apiRequest("/sms/session", "POST", {
-      sessionId: sessionId // 
+      sessionId: Number.parseInt(sessionId, 10),
     })
+
+    console.log("Oturum detayları yanıtı:", response)
 
     if (!response.result?.session) {
       console.warn("No session found in response:", response)
       throw new Error("Session not found")
     }
 
-    return response.result.session
+    const session = response.result.session
+
+    // API yanıtını uygulamamızın beklediği formata dönüştür
+    return {
+      id: session.id.toString(),
+      phoneNumber: formatPhoneNumber(session.phoneNumber),
+      country: {
+        name: session.country?.name || "Turkey",
+        isoCode: session.country?.isoName?.toUpperCase() || "TR",
+      },
+      platform: {
+        name: session.service?.platform?.name || "Unknown",
+      },
+      expiresAt: new Date(session.expireAt).toISOString(),
+      messageCount: session.message ? 1 : 0,
+      status: session.status,
+      message: session.message,
+    }
   } catch (error) {
     console.error("Error fetching session details:", error)
     throw error
   }
 }
 
-export async function getCountries() {
+// Get messages for a session
+export async function getSessionMessages(sessionId: string) {
   try {
-    const response = await apiRequest("/country/list/get", "POST", {})
+    // Oturum detaylarını al
+    const sessionResponse = await getSessionDetails(sessionId)
 
-    if (!response.result?.countries) {
-      console.warn("No countries found in response:", response)
-      return []
+    // Eğer oturumda mesaj varsa, onu döndür
+    if (sessionResponse.message) {
+      return [
+        {
+          id: "1",
+          sender: sessionResponse.message.sender,
+          content: sessionResponse.message.text,
+          receivedAt: new Date().toISOString(),
+          code: sessionResponse.message.code,
+        },
+      ]
     }
 
-    return response.result.countries || []
+    // Mesaj yoksa boş dizi döndür
+    return []
+  } catch (error) {
+    console.error("Oturuma ait SMS mesajları alınırken hata oluştu:", error)
+    throw error
+  }
+}
+
+// Helper function to format phone number
+function formatPhoneNumber(number: string) {
+  // If number starts with country code, format it nicely
+  if (number && (number.startsWith("90") || number.startsWith("+90"))) {
+    const cleaned = number.replace(/\D/g, "").replace(/^90/, "")
+    return `+90 ${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6)}`
+  }
+  return number
+}
+
+// Diğer fonksiyonlar aynı kalabilir...
+export async function getDefaultCountry() {
+  return { id: TURKEY_COUNTRY_ID, name: "Turkey", isoCode: "TR", phonePrefix: "90" }
+}
+
+export async function getCountries() {
+  try {
+    const response = await apiRequest("/country/list", "POST", {})
+    return response.result?.countries || []
   } catch (error) {
     console.error("Error fetching countries:", error)
-    throw error
+    return []
   }
 }
 
 export async function getPhoneNumbers(countryId: string) {
   try {
-    const response = await apiRequest("/number/list/get", "POST", {
-      serviceId: YEMEKSEPETI_SERVICE_ID, // Yemeksepeti service ID
+    const response = await apiRequest("/service/list", "POST", {
+      countryId: Number.parseInt(countryId, 10),
     })
-
-    if (!response.result?.numbers) {
-      console.warn("No phone numbers found in response:", response)
-      return []
-    }
-
-    return response.result.numbers || []
+    return response.result?.services || []
   } catch (error) {
     console.error("Error fetching phone numbers:", error)
-    throw error
+    return []
   }
 }
 
@@ -205,57 +194,43 @@ export async function getActiveSessions(sessionIds: string[]) {
         sessions.push(sessionDetails)
       } catch (error) {
         console.error(`Error fetching session ${sessionId}:`, error)
-        // Skip this session if there's an error
       }
     }
     return sessions
   } catch (error) {
     console.error("Error fetching active sessions:", error)
-    throw error
+    return []
   }
 }
 
-// Get service information for Yemeksepeti
 export async function getYemeksepetiServiceInfo() {
-  try {
-    // This function could be used to get up-to-date information about the service
-    // For now, returning hardcoded data based on the provided JSON
-    return {
+  return {
+    id: YEMEKSEPETI_SERVICE_ID,
+    country: {
+      id: TURKEY_COUNTRY_ID,
+      name: "Turkey",
+      isoName: "tr",
+      phonePrefix: "90",
+    },
+    platform: {
       id: YEMEKSEPETI_SERVICE_ID,
-      country: {
-        id: TURKEY_COUNTRY_ID,
-        name: "Turkey",
-        isoName: "tr",
-        iconPath: "/assets/images/flag/tr.svg",
-        phonePrefix: "90",
-      },
-      platform: {
-        id: YEMEKSEPETI_SERVICE_ID,
-        name: "Yemeksepeti",
-        iconPath: "/assets/images/platform/yemeksepeti.webp",
-      },
-      amount: {
-        usageAmount: "0.30",
-        reuseAmount: "0.00",
-        usageDiscountedAmount: "0.30",
-        reuseDiscountedAmount: "0.00",
-      },
-      maxReuse: 10,
-      quantity: 1000,
-      usageTimeout: 1800, // 30 minutes in seconds
-      reuseTimeout: 1800,
-      status: "enabled",
-    }
-  } catch (error) {
-    console.error("Error getting Yemeksepeti service info:", error)
-    throw error
+      name: "Yemeksepeti",
+    },
+    amount: {
+      usageAmount: "0.30",
+      reuseAmount: "0.00",
+      usageDiscountedAmount: "0.30",
+      reuseDiscountedAmount: "0.00",
+    },
+    maxReuse: 10,
+    quantity: 1000,
+    usageTimeout: 1800,
+    reuseTimeout: 1800,
+    status: "enabled",
   }
 }
 
-// Helper functions for service operations
 export async function getServiceForCountry() {
-  // This function is no longer needed since we're directly using Yemeksepeti's ID
-  // But we're keeping it for potential compatibility with other code
   return {
     id: YEMEKSEPETI_SERVICE_ID.toString(),
     name: "Yemeksepeti",
@@ -265,10 +240,10 @@ export async function getServiceForCountry() {
 }
 
 // Create a new SMS session (rent a number)
-export async function createSmsSession() {
+export async function createSmsSession(serviceId: number) {
   try {
     const response = await apiRequest("/sms/session/create", "POST", {
-      serviceId: YEMEKSEPETI_SERVICE_ID,
+      serviceId,
     })
 
     if (!response.result?.session) {

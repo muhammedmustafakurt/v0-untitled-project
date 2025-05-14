@@ -21,19 +21,26 @@ export function AutoRentNumber() {
     try {
       const result = await autoRentNumber()
 
-      setPhoneNumber(result.phoneNumber)
-      setSessionId(result.id)
+      if (result && result.id) {
+        // Format phone number for display if needed
+        const formattedNumber = result.phoneNumber ? formatPhoneNumber(result.phoneNumber) : result.phoneNumber
 
-      // Store session in localStorage and cookies
-      const existingSessions = JSON.parse(localStorage.getItem("sessions") || "[]")
-      localStorage.setItem("sessions", JSON.stringify([...existingSessions, result.id]))
-      document.cookie = `sessions=${JSON.stringify([...existingSessions, result.id])}; path=/; max-age=86400`
+        setPhoneNumber(formattedNumber)
+        setSessionId(result.id.toString())
 
-      toast({
-        title: "Numara başarıyla kiralandı!",
-        description: "Bu numarayı Yemeksepeti'de kullanabilir ve SMS mesajlarını burada görebilirsiniz.",
-        variant: "default",
-      })
+        // Store session in localStorage and cookies
+        const existingSessions = JSON.parse(localStorage.getItem("sessions") || "[]")
+        localStorage.setItem("sessions", JSON.stringify([...existingSessions, result.id.toString()]))
+        document.cookie = `sessions=${JSON.stringify([...existingSessions, result.id.toString()])}; path=/; max-age=86400`
+
+        toast({
+          title: "Numara başarıyla kiralandı!",
+          description: "Bu numarayı kullanabilir ve SMS mesajlarını burada görebilirsiniz.",
+          variant: "default",
+        })
+      } else {
+        throw new Error("Invalid response format")
+      }
     } catch (error) {
       console.error("Error renting number:", error)
       toast({
@@ -44,6 +51,16 @@ export function AutoRentNumber() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Helper function to format phone number
+  const formatPhoneNumber = (number: string) => {
+    // If number starts with country code, format it nicely
+    if (number.startsWith("90") || number.startsWith("+90")) {
+      const cleaned = number.replace(/\D/g, "").replace(/^90/, "")
+      return `+90 ${cleaned.substring(0, 3)} ${cleaned.substring(3, 6)} ${cleaned.substring(6)}`
+    }
+    return number
   }
 
   const handleViewMessages = () => {
@@ -78,8 +95,7 @@ export function AutoRentNumber() {
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-4">Telefon Numaranızı Alın</h3>
             <p className="text-gray-600 mb-6">
-              Yemeksepeti için SMS mesajları almak üzere hemen bir telefon numarası kiralamak için aşağıdaki butona
-              tıklayın.
+              SMS mesajları almak üzere hemen bir telefon numarası kiralamak için aşağıdaki butona tıklayın.
             </p>
             <Button
               onClick={handleRentNumber}
@@ -126,8 +142,8 @@ export function AutoRentNumber() {
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-6 text-left">
               <p className="text-sm text-yellow-800">
-                <strong>Nasıl kullanılır:</strong> Bu numarayı Yemeksepeti kayıt formunda kullanın. Doğrulama kodunu
-                görmek için "Mesajları Görüntüle" butonuna tıklayın.
+                <strong>Nasıl kullanılır:</strong> Bu numarayı kayıt formunda kullanın. Doğrulama kodunu görmek için
+                "Mesajları Görüntüle" butonuna tıklayın.
               </p>
               <p className="text-sm text-yellow-800 mt-1">
                 <strong>Not:</strong> Bu numara 30 dakika süreyle geçerlidir.

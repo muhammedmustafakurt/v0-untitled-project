@@ -14,33 +14,43 @@ interface Message {
   sender: string
   content: string
   receivedAt: string
+  code?: string
 }
 
 interface MessageListProps {
   messages: Message[]
   sessionId: string
   expiresAt: string
+  isDemo?: boolean
 }
 
-export function MessageList({ messages: initialMessages, sessionId, expiresAt }: MessageListProps) {
+export function MessageList({ messages: initialMessages, sessionId, expiresAt, isDemo = false }: MessageListProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [refreshing, setRefreshing] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>(formatTimeLeft(expiresAt))
   const [isExpired, setIsExpired] = useState<boolean>(new Date(expiresAt).getTime() <= Date.now())
+  const [refreshError, setRefreshError] = useState<boolean>(false)
   const router = useRouter()
   const { toast } = useToast()
 
-  // Set up auto-refresh every 15 seconds
+  // İlk render'da mesajları ayarla
   useEffect(() => {
+    setMessages(initialMessages)
+  }, [initialMessages])
+
+  // Set up auto-refresh every 15 seconds if not in demo mode
+  useEffect(() => {
+    if (isDemo) return // Demo modunda otomatik yenileme yapma
+
     const interval = setInterval(() => {
-      if (!isExpired) {
+      if (!isExpired && !refreshError) {
         handleRefresh(false)
       }
     }, 15000)
 
     return () => clearInterval(interval)
-  }, [sessionId, isExpired])
+  }, [sessionId, isExpired, refreshError, isDemo])
 
   // Set up countdown timer
   useEffect(() => {
@@ -69,23 +79,52 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt }:
   }, [expiresAt])
 
   const handleRefresh = async (showToast = true) => {
+    if (isDemo) {
+      if (showToast) {
+        toast({
+          title: "Demo Modu",
+          description: "Demo modunda yenileme yapılamaz.",
+          variant: "default",
+        })
+      }
+      return
+    }
+
     setRefreshing(true)
     try {
       const updatedMessages = await getMessages(sessionId)
-      setMessages(updatedMessages)
+      console.log("Alınan mesajlar:", updatedMessages)
 
-      if (showToast) {
-        toast({
-          title: "Yenilendi",
-          description: "Mesajlarınız yenilendi.",
-        })
+      if (Array.isArray(updatedMessages)) {
+        setMessages(updatedMessages)
+        setRefreshError(false)
+
+        if (showToast) {
+          toast({
+            title: "Yenilendi",
+            description: `${updatedMessages.length} mesaj alındı.`,
+          })
+        }
+      } else {
+        console.error("Mesajlar bir dizi değil:", updatedMessages)
+        setRefreshError(true)
+
+        if (showToast) {
+          toast({
+            title: "Yenileme başarısız",
+            description: "Mesajlar doğru formatta alınamadı.",
+            variant: "destructive",
+          })
+        }
       }
     } catch (error) {
       console.error("Error refreshing messages:", error)
+      setRefreshError(true)
+
       if (showToast) {
         toast({
           title: "Yenileme başarısız",
-          description: "Mesajlar yenilenemedi. Lütfen tekrar deneyin.",
+          description: error instanceof Error ? error.message : "Mesajlar yenilenemedi.",
           variant: "destructive",
         })
       }
@@ -105,8 +144,16 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt }:
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  // Extract verification codes from message content
-  const extractVerificationCode = (content: string) => {
+  // Extract verification codes from message content or use the provided code
+  const getVerificationCode = (message: Message) => {
+    // If the message already has a code property, use it
+    if (message.code) {
+      return message.code
+    }
+
+    // Otherwise extract from content
+    const content = message.content
+
     // Common patterns for verification codes
     const patterns = [
       /\b([0-9]{6})\b/, // 6-digit code
@@ -138,13 +185,32 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt }:
         <Button
           variant="outline"
           onClick={() => handleRefresh()}
-          disabled={refreshing || isExpired}
+          disabled={refreshing || isExpired || isDemo}
           className="flex items-center gap-2"
         >
           <RefreshCwIcon className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Şimdi Yenile
+          {isDemo ? "Demo Modu" : "Şimdi Yenile"}
         </Button>
       </div>
+
+      {isDemo && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-6">
+          <p className="font-medium">Demo Modu Aktif</p>
+          <p className="text-sm">
+            Şu anda demo modundasınız. Bu modda, doğrulama kodunu içeren örnek mesajlar gösterilmektedir.
+          </p>
+        </div>
+      )}
+
+      {refreshError && !isDemo && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded mb-6">
+          <p className="font-medium">Otomatik yenileme devre dışı</p>
+          <p className="text-sm">
+            Mesajları yenilemede bir sorun oluştu. Otomatik yenileme devre dışı bırakıldı. Manuel olarak "Şimdi Yenile"
+            butonuna tıklayabilirsiniz.
+          </p>
+        </div>
+      )}
 
       {isExpired && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -163,13 +229,15 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt }:
             <p className="text-gray-600 mb-4">
               Bu numaraya henüz mesaj almadınız. Mesajlar geldiğinde otomatik olarak burada görünecektir.
             </p>
-            <p className="text-sm text-gray-500">Her 15 saniyede bir yeni mesajlar için otomatik kontrol ediyoruz.</p>
+            {!isDemo && (
+              <p className="text-sm text-gray-500">Her 15 saniyede bir yeni mesajlar için otomatik kontrol ediyoruz.</p>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           {messages.map((message) => {
-            const verificationCode = extractVerificationCode(message.content)
+            const verificationCode = getVerificationCode(message)
 
             return (
               <Card key={message.id} className={verificationCode ? "border-green-200" : ""}>

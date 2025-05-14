@@ -9,7 +9,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ShoppingBagIcon className="h-6 w-6 text-white" />
-            <h1 className="text-xl font-bold">YemekSepeti Doğrulama</h1>
+            <h1 className="text-xl font-bold">Yemeksepeti Doğrulama</h1>
           </div>
           <nav>
             <ul className="flex gap-6">
@@ -19,8 +19,8 @@ export default function HomePage() {
                 </Link>
               </li>
               <li>
-                <Link href="/messages" className="font-medium text-white hover:text-red-100">
-                  Mesajlarım
+                <Link href="/demo-messages" className="font-medium text-white hover:text-red-100">
+                  Demo Mesajlar
                 </Link>
               </li>
             </ul>
@@ -58,8 +58,8 @@ export default function HomePage() {
                 <div className="bg-red-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-red-600 font-bold">2</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">YemekSepeti'nde Kullanın</h3>
-                <p className="text-gray-600">Numarayı YemekSepeti kayıt formunda kullanın.</p>
+                <h3 className="text-xl font-semibold mb-3">Yemeksepeti'nde Kullanın</h3>
+                <p className="text-gray-600">Numarayı Yemeksepeti kayıt formunda kullanın.</p>
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow-md text-center">
@@ -93,7 +93,7 @@ export default function HomePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <ShoppingBagIcon className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
-                    <span>YemekSepeti ve diğer yemek siparişi uygulamaları için idealdir</span>
+                    <span>Yemeksepeti ve diğer yemek siparişi uygulamaları için idealdir</span>
                   </li>
                 </ul>
               </div>
@@ -115,7 +115,7 @@ export default function HomePage() {
             <div className="mb-4 md:mb-0">
               <div className="flex items-center gap-2">
                 <ShoppingBagIcon className="h-5 w-5 text-red-400" />
-                <span className="font-bold">YemekSepeti Doğrulama</span>
+                <span className="font-bold">Yemeksepeti Doğrulama</span>
               </div>
               <p className="text-sm text-gray-400 mt-1">© 2025 Tüm hakları saklıdır.</p>
             </div>

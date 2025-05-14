@@ -11,13 +11,51 @@ export default async function SessionMessagesPage({ params }: { params: { sessio
 
   try {
     // Önce oturum detaylarını al
-    session = await getSessionDetails(params.sessionId)
+    try {
+      session = await getSessionDetails(params.sessionId)
+      console.log("Oturum detayları alındı:", session)
+    } catch (sessionError) {
+      console.error("Error fetching session details:", sessionError)
+      error = sessionError instanceof Error ? sessionError.message : "Unknown error occurred"
+    }
 
-    // Sonra mesajları al
-    messages = await getSessionMessages(params.sessionId)
+    // Sonra mesajları al - artık mesajlar oturum detaylarında geliyor
+    if (session) {
+      try {
+        messages = await getSessionMessages(params.sessionId)
+        console.log("Mesajlar alındı:", messages)
+      } catch (messagesError) {
+        console.error("Error fetching messages:", messagesError)
+        if (!error) {
+          error = messagesError instanceof Error ? messagesError.message : "Unknown error occurred"
+        }
+      }
+    }
   } catch (err) {
     console.error("Error in SessionMessagesPage:", err)
     error = err instanceof Error ? err.message : "Unknown error occurred"
+  }
+
+  // Eğer session alınamadıysa, demo session oluştur
+  if (!session) {
+    session = {
+      id: params.sessionId,
+      phoneNumber: "+90 555 123 4567",
+      expiresAt: new Date(Date.now() + 1000 * 60 * 30).toISOString(), // 30 minutes
+    }
+  }
+
+  // Eğer mesajlar alınamadıysa ve hata varsa, demo mesajlar göster
+  if (messages.length === 0 && error) {
+    messages = [
+      {
+        id: "m1",
+        sender: "Instagram",
+        content: "Instagram 142323. Don't share it.",
+        receivedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
+        code: "142323",
+      },
+    ]
   }
 
   return (
@@ -51,15 +89,20 @@ export default async function SessionMessagesPage({ params }: { params: { sessio
 
       {error && (
         <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded mb-6">
-          <p className="font-medium">Hata: {error}</p>
-          <p className="text-sm">Mesajlar alınırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>
+          <p className="font-medium">Not: Demo veriler gösteriliyor</p>
+          <p className="text-sm">
+            API'ye bağlanırken bir sorun oluştu, bu nedenle demo veriler gösteriliyor. Bu demo sürümünde, doğrulama
+            kodunu görebilirsiniz.
+          </p>
+          <p className="text-xs mt-1">Hata: {error}</p>
         </div>
       )}
 
       <MessageList
         messages={messages}
         sessionId={params.sessionId}
-        expiresAt={session?.expiresAt || new Date(Date.now() + 30 * 60 * 1000).toISOString()}
+        expiresAt={session?.expiresAt || new Date(Date.now() + 1000 * 60 * 30).toISOString()}
+        isDemo={!!error}
       />
     </div>
   )

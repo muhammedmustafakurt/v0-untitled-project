@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MessageSquareIcon, RefreshCwIcon } from "lucide-react"
+import { MessageSquareIcon, RefreshCwIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
 import { formatTimeLeft } from "@/lib/utils"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -16,8 +16,17 @@ interface Session {
     name: string
     isoCode: string
   }
+  platform: {
+    name: string
+  }
   expiresAt: string
   messageCount: number
+  status?: string
+  message?: {
+    text: string
+    sender: string
+    code: string
+  }
 }
 
 interface ActiveNumbersListProps {
@@ -35,8 +44,8 @@ export function ActiveNumbersList({ sessions }: ActiveNumbersListProps) {
       router.refresh()
       setRefreshing(false)
       toast({
-        title: "Refreshed",
-        description: "Your active numbers have been refreshed.",
+        title: "Yenilendi",
+        description: "Aktif numaralarınız yenilendi.",
       })
     }, 1000)
   }
@@ -44,9 +53,7 @@ export function ActiveNumbersList({ sessions }: ActiveNumbersListProps) {
   if (sessions.length === 0) {
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
-        <p className="text-amber-800">
-          You don't have any rented numbers yet. Browse our available numbers to get started.
-        </p>
+        <p className="text-amber-800">Henüz kiralanmış numaranız yok. Başlamak için bir numara kiralayın.</p>
       </div>
     )
   }
@@ -56,7 +63,7 @@ export function ActiveNumbersList({ sessions }: ActiveNumbersListProps) {
       <div className="flex justify-end mb-4">
         <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="flex items-center gap-2">
           <RefreshCwIcon className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
+          Yenile
         </Button>
       </div>
 
@@ -76,17 +83,32 @@ export function ActiveNumbersList({ sessions }: ActiveNumbersListProps) {
 
               <div className="flex justify-between items-center mb-3">
                 <div className="text-sm">
-                  <span className="text-gray-500">Expires in: </span>
+                  <span className="text-gray-500">Kalan süre: </span>
                   <span className="font-medium">{formatTimeLeft(session.expiresAt)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm">
-                  <MessageSquareIcon className="h-4 w-4 text-blue-500" />
-                  <span>{session.messageCount} messages</span>
+                  {session.status === "finished" ? (
+                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                  ) : session.status === "expired" ? (
+                    <XCircleIcon className="h-4 w-4 text-red-500" />
+                  ) : (
+                    <MessageSquareIcon className="h-4 w-4 text-blue-500" />
+                  )}
+                  <span>
+                    {session.messageCount} {session.messageCount === 1 ? "mesaj" : "mesaj"}
+                  </span>
                 </div>
               </div>
 
-              <Link href={`/my-numbers/${session.id}`}>
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">View Messages</Button>
+              {session.platform && (
+                <div className="mb-3 text-sm">
+                  <span className="text-gray-500">Platform: </span>
+                  <span className="font-medium">{session.platform.name}</span>
+                </div>
+              )}
+
+              <Link href={`/messages/${session.id}`}>
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Mesajları Görüntüle</Button>
               </Link>
             </CardContent>
           </Card>
