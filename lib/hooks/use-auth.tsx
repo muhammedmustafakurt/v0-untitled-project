@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, createContext, useContext } from "react"
 import { useRouter } from "next/navigation"
 
@@ -21,15 +20,8 @@ type AuthContextType = {
   logout: () => Promise<void>
 }
 
-// Create context with default values
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: false,
-  error: null,
-  login: async () => {},
-  register: async () => {},
-  logout: async () => {},
-})
+// Create context
+const AuthContext = createContext<AuthContextType | null>(null)
 
 // Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -129,23 +121,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  // Create value object outside of JSX
+  const authContextValue = {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+  }
+
+  // Return provider with value
+  return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>
 }
 
 // Custom hook to use auth context
 export function useAuth() {
-  return useContext(AuthContext)
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
 }
