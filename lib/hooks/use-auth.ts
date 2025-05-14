@@ -1,26 +1,38 @@
 "use client"
 
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+import type React from "react"
+
+import { useState, useEffect, createContext, useContext } from "react"
 import { useRouter } from "next/navigation"
 
-interface User {
+// Define types
+type User = {
   id: string
   email: string
   name?: string
 }
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null
   loading: boolean
+  error: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name?: string) => Promise<void>
   logout: () => Promise<void>
-  error: string | null
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: false,
+  error: null,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+})
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+// Auth provider component
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    async function loadUserFromCookies() {
+    const loadUserFromCookies = async () => {
       try {
         const res = await fetch("/api/auth/me")
         if (res.ok) {
@@ -43,9 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false)
       }
     }
+
     loadUserFromCookies()
   }, [])
 
+  // Login function
   const login = async (email: string, password: string) => {
     try {
       setLoading(true)
@@ -53,9 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       })
 
@@ -75,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Register function
   const register = async (email: string, password: string, name?: string) => {
     try {
       setLoading(true)
@@ -82,9 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),
       })
 
@@ -104,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Logout function
   const logout = async () => {
     try {
       setLoading(true)
@@ -117,22 +129,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const contextValue: AuthContextType = {
-    user,
-    loading,
-    login,
-    register,
-    logout,
-    error,
-  }
-
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        login,
+        register,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
+// Custom hook to use auth context
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
+  return useContext(AuthContext)
 }
