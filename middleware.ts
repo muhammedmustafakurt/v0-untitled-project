@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
   const isPublicPath =
     path === "/login" ||
     path === "/register" ||
+    path === "/admin/login" ||
     path.startsWith("/_next") ||
     path.includes("/api/auth/") ||
     path.includes("/favicon.ico") ||
@@ -29,7 +30,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value
 
   // If the path is not public and there's no token, redirect to login
-  if (!isPublicPath && !token && !isAdminPath) {
+  if (!isPublicPath && !token) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
@@ -37,7 +38,13 @@ export async function middleware(request: NextRequest) {
   if ((path === "/login" || path === "/register") && token) {
     try {
       // Verify the token
-      await jwtVerify(token, secretKey)
+      const { payload } = await jwtVerify(token, secretKey)
+      
+      // Admin kullanıcıları admin paneline yönlendir
+      if (payload.isAdmin) {
+        return NextResponse.redirect(new URL("/admin", request.url))
+      }
+      
       return NextResponse.redirect(new URL("/", request.url))
     } catch (error) {
       // If token verification fails, clear the cookie and continue
@@ -71,25 +78,6 @@ export async function middleware(request: NextRequest) {
     } catch (error) {
       // If token verification fails, redirect to admin login
       return NextResponse.redirect(new URL("/admin/login", request.url))
-    }
-  }
-
-  // Admin login sayfasına erişim kontrolü
-  if (path === "/admin/login" && token) {
-    try {
-      // Verify the token
-      const { payload } = await jwtVerify(token, secretKey)
-
-      // Eğer zaten admin olarak giriş yapmışsa, admin paneline yönlendir
-      if (payload.isAdmin) {
-        return NextResponse.redirect(new URL("/admin", request.url))
-      }
-
-      // Admin değilse admin login sayfasına erişebilir
-      return NextResponse.next()
-    } catch (error) {
-      // Token geçersizse, sayfaya erişime izin ver
-      return NextResponse.next()
     }
   }
 
