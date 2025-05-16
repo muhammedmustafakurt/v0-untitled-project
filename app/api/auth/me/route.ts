@@ -10,34 +10,50 @@ const secretKey = textEncoder.encode(JWT_SECRET)
 
 export async function GET() {
   try {
-    const token = cookies().get("auth_token")?.value
+    const cookieStore = await cookies()
+    const token = cookieStore.get("auth_token")?.value
 
     if (!token) {
-      return NextResponse.json({ user: null })
+      return NextResponse.json({ user: null }, { status: 401 })
     }
 
-    // Verify the token
-    const { payload } = await jwtVerify(token, secretKey)
-    const userId = payload.id as string
+    try {
+      // Verify the token
+      const { payload } = await jwtVerify(token, secretKey)
+      const userId = payload.id as string
 
-    // Get the user from the database
-    const user = await findUserById(userId)
+      // Get the user from the database
+      const user = await findUserById(userId)
 
-    if (!user) {
-      return NextResponse.json({ user: null })
+      if (!user) {
+        return NextResponse.json({ user: null }, { status: 401 })
+      }
+
+      return NextResponse.json({
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          balance: user.balance || 0,
+          isAdmin: user.isAdmin || false,
+        },
+      })
+    } catch (error) {
+      // Token geçersizse cookie'yi temizle
+      const cookieStore = await cookies()
+      cookieStore.set({
+        name: "auth_token",
+        value: "",
+        httpOnly: true,
+        path: "/",
+        maxAge: 0,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+      })
+      return NextResponse.json({ user: null }, { status: 401 })
     }
-
-    return NextResponse.json({
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        balance: user.balance || 0,
-        isAdmin: user.isAdmin || false,
-      },
-    })
   } catch (error) {
     console.error("Auth check error:", error)
-    return NextResponse.json({ user: null })
+    return NextResponse.json({ user: null }, { status: 500 })
   }
 }
