@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/hooks/use-auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // Numara kiralama ücreti
-const RENTAL_PRICE = 0.3
+const RENTAL_PRICE = 25 // 25 TL olarak güncellendi
 
 export function AutoRentNumber() {
   const [loading, setLoading] = useState(false)
@@ -27,7 +27,7 @@ export function AutoRentNumber() {
     try {
       // Bakiye kontrolü
       if (user && user.balance < RENTAL_PRICE) {
-        throw new Error(`Yetersiz bakiye. Numara kiralamak için en az ${RENTAL_PRICE} USD bakiyeniz olmalıdır.`)
+        throw new Error(`Yetersiz bakiye. Numara kiralamak için en az ${RENTAL_PRICE} TL bakiyeniz olmalıdır.`)
       }
 
       const result = await autoRentNumber()
@@ -133,11 +133,11 @@ export function AutoRentNumber() {
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-gray-600">Mevcut Bakiyeniz:</span>
-                  <span className="font-semibold">{user.balance.toFixed(2)} USD</span>
+                  <span className="font-semibold">{user.balance.toFixed(2)} TL</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Kiralama Ücreti:</span>
-                  <span className="font-semibold">{RENTAL_PRICE.toFixed(2)} USD</span>
+                  <span className="font-semibold">{RENTAL_PRICE.toFixed(2)} TL</span>
                 </div>
               </div>
             )}
@@ -170,7 +170,7 @@ export function AutoRentNumber() {
                 </>
               )}
             </Button>
-            <p className="text-xs text-gray-500 mt-2">Kullanım ücreti: {RENTAL_PRICE.toFixed(2)} USD</p>
+            <p className="text-xs text-gray-500 mt-2">Kullanım ücreti: {RENTAL_PRICE.toFixed(2)} TL</p>
           </div>
         ) : (
           <div className="text-center">

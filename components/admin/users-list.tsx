@@ -47,16 +47,16 @@ export function AdminUsersList() {
       const response = await fetch("/api/admin/users")
 
       if (!response.ok) {
-        throw new Error("Failed to fetch users")
+        throw new Error("Kullanıcılar alınamadı")
       }
 
       const data = await response.json()
-      setUsers(data.users)
+      setUsers(data.users || [])
     } catch (error) {
       console.error("Error fetching users:", error)
       toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
+        title: "Hata",
+        description: "Kullanıcılar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
         variant: "destructive",
       })
     } finally {
@@ -72,7 +72,7 @@ export function AdminUsersList() {
       const amount = Number.parseFloat(balanceAmount)
 
       if (isNaN(amount)) {
-        throw new Error("Please enter a valid amount")
+        throw new Error("Lütfen geçerli bir miktar girin")
       }
 
       const response = await fetch(`/api/admin/users/${selectedUser._id}/balance`, {
@@ -85,7 +85,7 @@ export function AdminUsersList() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Failed to update balance")
+        throw new Error(error.error || "Bakiye güncellenemedi")
       }
 
       const data = await response.json()
@@ -94,8 +94,8 @@ export function AdminUsersList() {
       setUsers(users.map((user) => (user._id === selectedUser._id ? { ...user, balance: data.balance } : user)))
 
       toast({
-        title: "Success",
-        description: `Balance updated successfully. New balance: ${data.balance.toFixed(2)} USD`,
+        title: "Başarılı",
+        description: `Bakiye başarıyla güncellendi. Yeni bakiye: ${data.balance.toFixed(2)} TL`,
       })
 
       setBalanceAmount("0")
@@ -103,8 +103,8 @@ export function AdminUsersList() {
     } catch (error) {
       console.error("Error updating balance:", error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update balance",
+        title: "Hata",
+        description: error instanceof Error ? error.message : "Bakiye güncellenemedi",
         variant: "destructive",
       })
     } finally {
@@ -120,21 +120,21 @@ export function AdminUsersList() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Failed to make user admin")
+        throw new Error(error.error || "Kullanıcı admin yapılamadı")
       }
 
       // Update the user in the list
       setUsers(users.map((user) => (user._id === userId ? { ...user, isAdmin: true } : user)))
 
       toast({
-        title: "Success",
-        description: "User is now an admin",
+        title: "Başarılı",
+        description: "Kullanıcı artık admin yetkisine sahip",
       })
     } catch (error) {
       console.error("Error making user admin:", error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to make user admin",
+        title: "Hata",
+        description: error instanceof Error ? error.message : "Kullanıcı admin yapılamadı",
         variant: "destructive",
       })
     }
@@ -150,15 +150,20 @@ export function AdminUsersList() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Kullanıcı Yönetimi</h2>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Kullanıcı ara..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex gap-2">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Kullanıcı ara..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button variant="outline" onClick={fetchUsers}>
+            Yenile
+          </Button>
         </div>
       </div>
 
@@ -197,7 +202,7 @@ export function AdminUsersList() {
                         </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>${user.balance.toFixed(2)}</TableCell>
+                      <TableCell>{user.balance.toFixed(2)} TL</TableCell>
                       <TableCell>
                         {user.isAdmin ? (
                           <div className="flex items-center gap-1 text-blue-600">
@@ -222,14 +227,14 @@ export function AdminUsersList() {
                               <DialogHeader>
                                 <DialogTitle>Bakiye Güncelle</DialogTitle>
                                 <DialogDescription>
-                                  {selectedUser?.email} kullanıcısının bakiyesini güncelleyin. Mevcut bakiye: $
-                                  {selectedUser?.balance.toFixed(2)}
+                                  {selectedUser?.email} kullanıcısının bakiyesini güncelleyin. Mevcut bakiye:{" "}
+                                  {selectedUser?.balance.toFixed(2)} TL
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="grid gap-4 py-4">
                                 <div className="grid grid-cols-4 items-center gap-4">
                                   <Label htmlFor="amount" className="text-right">
-                                    Miktar
+                                    Miktar (TL)
                                   </Label>
                                   <Input
                                     id="amount"

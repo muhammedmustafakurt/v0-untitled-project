@@ -7,7 +7,6 @@ const textEncoder = new TextEncoder()
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 const secretKey = textEncoder.encode(JWT_SECRET)
 
-// This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   // Get the pathname
   const path = request.nextUrl.pathname
@@ -17,8 +16,13 @@ export async function middleware(request: NextRequest) {
     path === "/login" ||
     path === "/register" ||
     path === "/" ||
+    path === "/admin-login" ||
     path.startsWith("/_next") ||
-    path.includes("/api/auth/")
+    path.includes("/api/auth/") ||
+    path.includes("/favicon.ico") ||
+    path.includes(".png") ||
+    path.includes(".jpg") ||
+    path.includes(".svg")
 
   // Define admin paths
   const isAdminPath = path.startsWith("/admin") || path.includes("/api/admin/")
@@ -57,16 +61,37 @@ export async function middleware(request: NextRequest) {
   if (isAdminPath && token) {
     try {
       // Verify the token
-      await jwtVerify(token, secretKey)
+      const { payload } = await jwtVerify(token, secretKey)
 
-      // Admin kontrolü burada yapılmıyor, çünkü middleware'de veritabanı sorgusu yapamıyoruz
-      // Bu kontrol API rotalarında yapılacak
+      // Admin kontrolü
+      if (!payload.isAdmin) {
+        // Admin değilse ana sayfaya yönlendir
+        return NextResponse.redirect(new URL("/", request.url))
+      }
 
-      // Sadece token geçerliliğini kontrol ediyoruz
       return NextResponse.next()
     } catch (error) {
-      // If token verification fails, redirect to login
-      return NextResponse.redirect(new URL("/login", request.url))
+      // If token verification fails, redirect to admin login
+      return NextResponse.redirect(new URL("/admin-login", request.url))
+    }
+  }
+
+  // Admin login sayfasına erişim kontrolü
+  if (path === "/admin-login" && token) {
+    try {
+      // Verify the token
+      const { payload } = await jwtVerify(token, secretKey)
+
+      // Eğer zaten admin olarak giriş yapmışsa, admin paneline yönlendir
+      if (payload.isAdmin) {
+        return NextResponse.redirect(new URL("/admin", request.url))
+      }
+
+      // Admin değilse admin login sayfasına erişebilir
+      return NextResponse.next()
+    } catch (error) {
+      // Token geçersizse, sayfaya erişime izin ver
+      return NextResponse.next()
     }
   }
 
@@ -78,11 +103,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/auth (API routes that handle authentication)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image).*)",
   ],
 }

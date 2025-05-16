@@ -43,7 +43,7 @@ export function Header() {
                 </Link>
               </li>
 
-              {user && <li className="font-medium text-white">Bakiye: {user.balance.toFixed(2)} USD</li>}
+              {user && <li className="font-medium text-white">Bakiye: {user.balance.toFixed(2)} TL</li>}
 
               {user ? (
                 <li>
@@ -129,7 +129,7 @@ export function Header() {
                 </Link>
               </li>
 
-              {user && <li className="py-2 font-medium text-white">Bakiye: {user.balance.toFixed(2)} USD</li>}
+              {user && <li className="py-2 font-medium text-white">Bakiye: {user.balance.toFixed(2)} TL</li>}
 
               {user ? (
                 <>
