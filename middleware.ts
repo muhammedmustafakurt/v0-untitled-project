@@ -49,12 +49,13 @@ export function middleware(request: NextRequest) {
   if (isAdminPath && token) {
     try {
       // Verify the token
-      const decoded = verify(token, JWT_SECRET) as { id: string; isAdmin?: boolean }
+      const decoded = verify(token, JWT_SECRET) as { id: string }
 
-      // If the user is not an admin, redirect to home
-      if (!decoded.isAdmin) {
-        return NextResponse.redirect(new URL("/", request.url))
-      }
+      // Admin kontrolü burada yapılmıyor, çünkü middleware'de veritabanı sorgusu yapamıyoruz
+      // Bu kontrol API rotalarında yapılacak
+
+      // Sadece token geçerliliğini kontrol ediyoruz
+      return NextResponse.next()
     } catch (error) {
       // If token verification fails, redirect to login
       return NextResponse.redirect(new URL("/login", request.url))
