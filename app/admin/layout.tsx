@@ -1,6 +1,6 @@
 import type React from "react"
 
-export default function MyNumbersLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode

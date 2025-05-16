@@ -20,7 +20,7 @@ export async function createUser(userData: Omit<User, "_id">): Promise<User> {
   // Check if user already exists
   const existingUser = await db.collection("users").findOne({ email: userData.email })
   if (existingUser) {
-    throw new Error("User already exists")
+    throw new Error("Bu e-posta adresi zaten kullanılıyor")
   }
 
   // Hash the password
@@ -38,7 +38,38 @@ export async function createUser(userData: Omit<User, "_id">): Promise<User> {
 
   const user = await db.collection("users").findOne({ _id: result.insertedId })
   if (!user) {
-    throw new Error("Failed to create user")
+    throw new Error("Kullanıcı oluşturulamadı")
+  }
+  return user as User
+}
+
+// Admin kullanıcı oluşturma fonksiyonu
+export async function createAdminUser(userData: Omit<User, "_id">): Promise<User> {
+  const client = await clientPromise
+  const db = client.db()
+
+  // Check if user already exists
+  const existingUser = await db.collection("users").findOne({ email: userData.email })
+  if (existingUser) {
+    throw new Error("Bu e-posta adresi zaten kullanılıyor")
+  }
+
+  // Hash the password
+  const hashedPassword = await hash(userData.password, 12)
+
+  // Create the user with admin privileges
+  const result = await db.collection("users").insertOne({
+    ...userData,
+    password: hashedPassword,
+    sessions: [],
+    balance: 1000, // Admin için başlangıç bakiyesi
+    isAdmin: true, // Admin yetkisi
+    createdAt: new Date(),
+  })
+
+  const user = await db.collection("users").findOne({ _id: result.insertedId })
+  if (!user) {
+    throw new Error("Admin kullanıcı oluşturulamadı")
   }
   return user as User
 }
@@ -98,14 +129,14 @@ export async function updateUserBalance(userId: string, amount: number): Promise
 
   const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
   if (!user) {
-    throw new Error("User not found")
+    throw new Error("Kullanıcı bulunamadı")
   }
 
   const newBalance = (user.balance || 0) + amount
 
   // Bakiye negatif olamaz
   if (newBalance < 0) {
-    throw new Error("Insufficient balance")
+    throw new Error("Yetersiz bakiye")
   }
 
   await db.collection("users").updateOne({ _id: new ObjectId(userId) }, { $set: { balance: newBalance } })
@@ -120,12 +151,12 @@ export async function deductBalanceForRental(userId: string, amount: number): Pr
 
   const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
   if (!user) {
-    throw new Error("User not found")
+    throw new Error("Kullanıcı bulunamadı")
   }
 
   const currentBalance = user.balance || 0
   if (currentBalance < amount) {
-    throw new Error("Insufficient balance")
+    throw new Error("Yetersiz bakiye")
   }
 
   const newBalance = currentBalance - amount

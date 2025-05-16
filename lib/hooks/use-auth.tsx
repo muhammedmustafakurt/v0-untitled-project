@@ -21,6 +21,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name?: string) => Promise<void>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 // Create context with default values
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: async () => {},
+  refreshUser: async () => {},
 })
 
 // Auth provider component
@@ -42,24 +44,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const loadUserFromCookies = async () => {
-      try {
-        const res = await fetch("/api/auth/me")
-        if (res.ok) {
-          const data = await res.json()
-          if (data.user) {
-            setUser(data.user)
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load user", e)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     loadUserFromCookies()
   }, [])
+
+  const loadUserFromCookies = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch("/api/auth/me", {
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.user) {
+          setUser(data.user)
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load user", e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Refresh user data
+  const refreshUser = async () => {
+    await loadUserFromCookies()
+  }
 
   // Login function
   const login = async (email: string, password: string) => {
@@ -76,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Login failed")
+        throw new Error(data.error || "Giriş başarısız")
       }
 
       setUser(data.user)
@@ -89,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.error("Login error", e)
-      setError(e instanceof Error ? e.message : "Login failed")
+      setError(e instanceof Error ? e.message : "Giriş başarısız")
     } finally {
       setLoading(false)
     }
@@ -110,14 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || "Registration failed")
+        throw new Error(data.error || "Kayıt başarısız")
       }
 
       // After registration, log the user in
       await login(email, password)
     } catch (e) {
       console.error("Registration error", e)
-      setError(e instanceof Error ? e.message : "Registration failed")
+      setError(e instanceof Error ? e.message : "Kayıt başarısız")
     } finally {
       setLoading(false)
     }
@@ -146,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}

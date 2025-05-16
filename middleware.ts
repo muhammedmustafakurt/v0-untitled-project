@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     path === "/login" ||
     path === "/register" ||
     path === "/" ||
-    path === "/admin-login" ||
+    path === "/admin/login" ||
     path.startsWith("/_next") ||
     path.includes("/api/auth/") ||
     path.includes("/favicon.ico") ||
@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
   if ((path === "/login" || path === "/register") && token) {
     try {
       // Verify the token
-      await jwtVerify(token, secretKey)
+      const { payload } = await jwtVerify(token, secretKey)
       return NextResponse.redirect(new URL("/", request.url))
     } catch (error) {
       // If token verification fails, clear the cookie and continue
@@ -72,12 +72,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next()
     } catch (error) {
       // If token verification fails, redirect to admin login
-      return NextResponse.redirect(new URL("/admin-login", request.url))
+      return NextResponse.redirect(new URL("/admin/login", request.url))
     }
   }
 
   // Admin login sayfasına erişim kontrolü
-  if (path === "/admin-login" && token) {
+  if (path === "/admin/login" && token) {
     try {
       // Verify the token
       const { payload } = await jwtVerify(token, secretKey)

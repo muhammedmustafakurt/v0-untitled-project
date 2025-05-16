@@ -1,11 +1,14 @@
 import { cookies } from "next/headers"
 import { getActiveSessions } from "@/lib/api"
 import { ActiveNumbersList } from "@/components/active-numbers-list"
-import { verify } from "jsonwebtoken"
+import { verify } from "jose"
 import { getUserSessions } from "@/lib/auth"
 import { Header } from "@/components/header"
 
+// JWT secret'ı buffer'a çevirme
+const textEncoder = new TextEncoder()
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const secretKey = textEncoder.encode(JWT_SECRET)
 
 export default async function MyNumbersPage() {
   let sessions = []
@@ -18,8 +21,8 @@ export default async function MyNumbersPage() {
 
     if (token) {
       try {
-        const decoded = verify(token, JWT_SECRET) as { id: string }
-        userId = decoded.id
+        const { payload } = await verify(token, secretKey)
+        userId = payload.id as string
       } catch (e) {
         console.error("Invalid token:", e)
       }

@@ -2,6 +2,8 @@ import { Header } from "@/components/header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminUsersList } from "@/components/admin/users-list"
 import { AdminNumbersList } from "@/components/admin/numbers-list"
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
 
 export default function AdminPage() {
   return (
@@ -18,11 +20,15 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="users">
-            <AdminUsersList />
+            <Suspense fallback={<LoadingState />}>
+              <AdminUsersList />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="numbers">
-            <AdminNumbersList />
+            <Suspense fallback={<LoadingState />}>
+              <AdminNumbersList />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
@@ -32,6 +38,14 @@ export default function AdminPage() {
           <p className="text-sm text-gray-400">© 2025 Yemeksepeti Doğrulama. Tüm hakları saklıdır.</p>
         </div>
       </footer>
+    </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="flex justify-center items-center p-12">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
     </div>
   )
 }
