@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     const token = await new SignJWT({
       id: user._id,
       email: user.email,
+      isAdmin: user.isAdmin || false,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
       .sign(secretKey)
 
     // Set the token in a cookie
-    cookies().set({
+    const cookieStore = await cookies()
+    cookieStore.set({
       name: "auth_token",
       value: token,
       httpOnly: true,
