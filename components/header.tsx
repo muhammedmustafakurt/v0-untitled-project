@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ShoppingBag, User, LogOut, Menu, X, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +15,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Header() {
-  const { user, logout } = useAuth()
+  const { user, logout, refreshUser } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Sayfa yüklendiğinde ve her 30 saniyede bir kullanıcı bilgilerini yenile
+  useEffect(() => {
+    refreshUser()
+
+    const interval = setInterval(() => {
+      refreshUser()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [refreshUser])
 
   return (
     <header className="border-b bg-red-600 text-white">

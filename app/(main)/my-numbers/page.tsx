@@ -1,9 +1,8 @@
 import { cookies } from "next/headers"
 import { getActiveSessions } from "@/lib/api"
 import { ActiveNumbersList } from "@/components/active-numbers-list"
-import { verify } from "jose"
+import { jwtVerify } from "jose"
 import { getUserSessions } from "@/lib/auth"
-import { Header } from "@/components/header"
 
 // JWT secret'ı buffer'a çevirme
 const textEncoder = new TextEncoder()
@@ -21,7 +20,7 @@ export default async function MyNumbersPage() {
 
     if (token) {
       try {
-        const { payload } = await verify(token, secretKey)
+        const { payload } = await jwtVerify(token, secretKey)
         userId = payload.id as string
       } catch (e) {
         console.error("Invalid token:", e)
@@ -43,27 +42,17 @@ export default async function MyNumbersPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Numaralarım</h1>
 
-      <div className="container mx-auto px-4 py-8 flex-1">
-        <h1 className="text-3xl font-bold mb-6">Numaralarım</h1>
-
-        {error && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded mb-6">
-            <p className="font-medium">Hata</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-
-        <ActiveNumbersList sessions={sessions} />
-      </div>
-
-      <footer className="bg-gray-800 text-white py-4">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-gray-400">© 2025 Yemeksepeti Doğrulama. Tüm hakları saklıdır.</p>
+      {error && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded mb-6">
+          <p className="font-medium">Hata</p>
+          <p className="text-sm">{error}</p>
         </div>
-      </footer>
+      )}
+
+      <ActiveNumbersList sessions={sessions} />
     </div>
   )
 }

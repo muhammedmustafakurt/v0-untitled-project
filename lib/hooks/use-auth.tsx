@@ -45,6 +45,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if user is logged in on mount
   useEffect(() => {
     loadUserFromCookies()
+
+    // Refresh user data every 5 minutes
+    const interval = setInterval(
+      () => {
+        loadUserFromCookies()
+      },
+      5 * 60 * 1000,
+    )
+
+    return () => clearInterval(interval)
   }, [])
 
   const loadUserFromCookies = async () => {
@@ -62,10 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json()
         if (data.user) {
           setUser(data.user)
+        } else {
+          setUser(null)
         }
+      } else {
+        setUser(null)
       }
     } catch (e) {
       console.error("Failed to load user", e)
+      setUser(null)
     } finally {
       setLoading(false)
     }

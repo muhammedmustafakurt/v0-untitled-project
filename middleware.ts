@@ -15,8 +15,6 @@ export async function middleware(request: NextRequest) {
   const isPublicPath =
     path === "/login" ||
     path === "/register" ||
-    path === "/" ||
-    path === "/admin/login" ||
     path.startsWith("/_next") ||
     path.includes("/api/auth/") ||
     path.includes("/favicon.ico") ||
@@ -31,7 +29,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value
 
   // If the path is not public and there's no token, redirect to login
-  if (!isPublicPath && !token) {
+  if (!isPublicPath && !token && !isAdminPath) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
@@ -39,7 +37,7 @@ export async function middleware(request: NextRequest) {
   if ((path === "/login" || path === "/register") && token) {
     try {
       // Verify the token
-      const { payload } = await jwtVerify(token, secretKey)
+      await jwtVerify(token, secretKey)
       return NextResponse.redirect(new URL("/", request.url))
     } catch (error) {
       // If token verification fails, clear the cookie and continue
