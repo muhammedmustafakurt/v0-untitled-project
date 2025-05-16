@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { PhoneIcon, Loader2Icon, CheckCircleIcon, RefreshCwIcon, CopyIcon, AlertCircleIcon } from "lucide-react"
+import { PhoneIcon, Loader2, CheckCircle, RefreshCw, Copy, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { autoRentNumber } from "@/lib/api-client"
@@ -144,7 +144,7 @@ export function AutoRentNumber() {
 
             {user && user.balance < RENTAL_PRICE && (
               <Alert variant="warning" className="mb-4">
-                <AlertCircleIcon className="h-4 w-4" />
+                <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Yetersiz Bakiye</AlertTitle>
                 <AlertDescription>
                   Numara kiralamak için yeterli bakiyeniz bulunmuyor. Lütfen bakiye yükleyin.
@@ -160,7 +160,7 @@ export function AutoRentNumber() {
             >
               {loading ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Numaranız alınıyor...
                 </>
               ) : (
@@ -175,7 +175,7 @@ export function AutoRentNumber() {
         ) : (
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
-              <CheckCircleIcon className="h-6 w-6 text-green-600 mr-2" />
+              <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
               <h3 className="text-lg font-semibold">Numaranız Hazır!</h3>
             </div>
 
@@ -188,9 +188,9 @@ export function AutoRentNumber() {
                 aria-label="Numarayı kopyala"
               >
                 {copied ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                 ) : (
-                  <CopyIcon className="h-5 w-5 text-red-600" />
+                  <Copy className="h-5 w-5 text-red-600" />
                 )}
               </button>
             </div>
@@ -216,7 +216,7 @@ export function AutoRentNumber() {
                 className="flex items-center"
                 disabled={user && user.balance < RENTAL_PRICE}
               >
-                <RefreshCwIcon className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Başka Numara Al
               </Button>
             </div>

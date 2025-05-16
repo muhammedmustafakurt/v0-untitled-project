@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2Icon, SearchIcon, UserIcon, ShieldIcon, CreditCardIcon } from "lucide-react"
+import { Loader2, Search, User, Shield, CreditCard } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-interface User {
+interface UserType {
   _id: string
   email: string
   name?: string
@@ -29,10 +29,10 @@ interface User {
 }
 
 export function AdminUsersList() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<UserType[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null)
   const [balanceAmount, setBalanceAmount] = useState("0")
   const [isUpdating, setIsUpdating] = useState(false)
   const { toast } = useToast()
@@ -151,7 +151,7 @@ export function AdminUsersList() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Kullanıcı Yönetimi</h2>
         <div className="relative w-64">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
             placeholder="Kullanıcı ara..."
@@ -166,7 +166,7 @@ export function AdminUsersList() {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex justify-center items-center p-8">
-              <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
             <Table>
@@ -192,7 +192,7 @@ export function AdminUsersList() {
                     <TableRow key={user._id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <UserIcon className="h-5 w-5 text-gray-400" />
+                          <User className="h-5 w-5 text-gray-400" />
                           <span>{user.name || "İsimsiz Kullanıcı"}</span>
                         </div>
                       </TableCell>
@@ -201,7 +201,7 @@ export function AdminUsersList() {
                       <TableCell>
                         {user.isAdmin ? (
                           <div className="flex items-center gap-1 text-blue-600">
-                            <ShieldIcon className="h-4 w-4" />
+                            <Shield className="h-4 w-4" />
                             <span>Admin</span>
                           </div>
                         ) : (
@@ -214,7 +214,7 @@ export function AdminUsersList() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm" onClick={() => setSelectedUser(user)}>
-                                <CreditCardIcon className="h-4 w-4 mr-1" />
+                                <CreditCard className="h-4 w-4 mr-1" />
                                 Bakiye
                               </Button>
                             </DialogTrigger>
@@ -248,7 +248,7 @@ export function AdminUsersList() {
                                 <Button onClick={handleUpdateBalance} disabled={isUpdating}>
                                   {isUpdating ? (
                                     <>
-                                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                       Güncelleniyor...
                                     </>
                                   ) : (
@@ -261,7 +261,7 @@ export function AdminUsersList() {
 
                           {!user.isAdmin && (
                             <Button variant="outline" size="sm" onClick={() => makeAdmin(user._id)}>
-                              <ShieldIcon className="h-4 w-4 mr-1" />
+                              <Shield className="h-4 w-4 mr-1" />
                               Admin Yap
                             </Button>
                           )}

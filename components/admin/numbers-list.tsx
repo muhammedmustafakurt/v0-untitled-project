@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2Icon, SearchIcon, PhoneIcon, UserIcon, ClockIcon } from "lucide-react"
+import { Loader2, Search, Phone, User, Clock } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatTimeLeft } from "@/lib/utils"
 
@@ -77,7 +77,7 @@ export function AdminNumbersList() {
         <h2 className="text-2xl font-semibold">Kiralanan Numaralar</h2>
         <div className="flex gap-4">
           <div className="relative w-64">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
               type="text"
               placeholder="Numara veya kullanıcı ara..."
@@ -87,7 +87,7 @@ export function AdminNumbersList() {
             />
           </div>
           <Button variant="outline" onClick={fetchSessions} disabled={loading}>
-            {loading ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Yenile"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yenile"}
           </Button>
         </div>
       </div>
@@ -96,7 +96,7 @@ export function AdminNumbersList() {
         <CardContent className="p-0">
           {loading && sessions.length === 0 ? (
             <div className="flex justify-center items-center p-8">
-              <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
             <Table>
@@ -126,13 +126,13 @@ export function AdminNumbersList() {
                       <TableRow key={session.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <PhoneIcon className="h-5 w-5 text-gray-400" />
+                            <Phone className="h-5 w-5 text-gray-400" />
                             <span>{session.phoneNumber}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <UserIcon className="h-5 w-5 text-gray-400" />
+                            <User className="h-5 w-5 text-gray-400" />
                             <div>
                               <div>{session.userName || "İsimsiz Kullanıcı"}</div>
                               <div className="text-xs text-gray-500">{session.userEmail}</div>
@@ -156,7 +156,7 @@ export function AdminNumbersList() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <ClockIcon className="h-4 w-4 text-gray-400" />
+                            <Clock className="h-4 w-4 text-gray-400" />
                             <span>{isExpired ? "Süresi Doldu" : formatTimeLeft(session.expiresAt)}</span>
                           </div>
                         </TableCell>

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingBagIcon, UserIcon, LogOutIcon, MenuIcon, XIcon, ShieldIcon } from "lucide-react"
+import { ShoppingBag, User, LogOut, Menu, X, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useState } from "react"
@@ -23,7 +23,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <ShoppingBagIcon className="h-6 w-6 text-white" />
+            <ShoppingBag className="h-6 w-6 text-white" />
             <Link href="/" className="text-xl font-bold">
               Yemeksepeti Doğrulama
             </Link>
@@ -50,7 +50,7 @@ export function Header() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="text-white hover:text-red-100 hover:bg-red-700">
-                        <UserIcon className="h-5 w-5 mr-2" />
+                        <User className="h-5 w-5 mr-2" />
                         {user.name || user.email}
                       </Button>
                     </DropdownMenuTrigger>
@@ -69,7 +69,7 @@ export function Header() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link href="/admin">
-                              <ShieldIcon className="h-4 w-4 mr-2" />
+                              <Shield className="h-4 w-4 mr-2" />
                               Admin Paneli
                             </Link>
                           </DropdownMenuItem>
@@ -78,7 +78,7 @@ export function Header() {
 
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => logout()} className="text-red-600">
-                        <LogOutIcon className="h-4 w-4 mr-2" />
+                        <LogOut className="h-4 w-4 mr-2" />
                         Çıkış Yap
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -102,7 +102,7 @@ export function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
@@ -150,7 +150,7 @@ export function Header() {
                         className="block py-2 font-medium text-white hover:text-red-100"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <ShieldIcon className="h-4 w-4 mr-2 inline" />
+                        <Shield className="h-4 w-4 mr-2 inline" />
                         Admin Paneli
                       </Link>
                     </li>
@@ -164,7 +164,7 @@ export function Header() {
                       }}
                       className="flex items-center py-2 font-medium text-white hover:text-red-100"
                     >
-                      <LogOutIcon className="h-4 w-4 mr-2" />
+                      <LogOut className="h-4 w-4 mr-2" />
                       Çıkış Yap
                     </button>
                   </li>

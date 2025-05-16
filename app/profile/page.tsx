@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2Icon, CreditCardIcon } from "lucide-react"
+import { Loader2, CreditCard } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -149,7 +149,7 @@ export default function ProfilePage() {
                   <Button type="submit" disabled={loading}>
                     {loading ? (
                       <>
-                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Güncelleniyor...
                       </>
                     ) : (
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button className="w-full">
-                      <CreditCardIcon className="mr-2 h-4 w-4" />
+                      <CreditCard className="mr-2 h-4 w-4" />
                       Bakiye Yükle
                     </Button>
                   </DialogTrigger>
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                       <Button onClick={handleAddBalance} disabled={isAddingBalance}>
                         {isAddingBalance ? (
                           <>
-                            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             İşleniyor...
                           </>
                         ) : (
