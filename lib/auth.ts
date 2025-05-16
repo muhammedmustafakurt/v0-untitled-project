@@ -8,6 +8,8 @@ export interface User {
   password: string
   name?: string
   sessions?: string[]
+  balance?: number
+  isAdmin?: boolean
   createdAt?: Date
 }
 
@@ -24,11 +26,13 @@ export async function createUser(userData: Omit<User, "_id">): Promise<User> {
   // Hash the password
   const hashedPassword = await hash(userData.password, 12)
 
-  // Create the user
+  // Create the user with initial balance
   const result = await db.collection("users").insertOne({
     ...userData,
     password: hashedPassword,
     sessions: [],
+    balance: 0, // Başlangıç bakiyesi 0
+    isAdmin: false, // Varsayılan olarak admin değil
     createdAt: new Date(),
   })
 
@@ -69,4 +73,79 @@ export async function getUserSessions(userId: string): Promise<string[]> {
 
   const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
   return (user?.sessions || []) as string[]
+}
+
+// Bakiye işlemleri
+export async function getUserBalance(userId: string): Promise<number> {
+  const client = await clientPromise
+  const db = client.db()
+
+  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+  return user?.balance || 0
+}
+
+export async function updateUserBalance(userId: string, amount: number): Promise<number> {
+  const client = await clientPromise
+  const db = client.db()
+
+  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  const newBalance = (user.balance || 0) + amount
+
+  // Bakiye negatif olamaz
+  if (newBalance < 0) {
+    throw new Error("Insufficient balance")
+  }
+
+  await db.collection("users").updateOne({ _id: new ObjectId(userId) }, { $set: { balance: newBalance } })
+
+  return newBalance
+}
+
+// Numara kiralama için bakiye kontrolü ve düşme
+export async function deductBalanceForRental(userId: string, amount: number): Promise<number> {
+  const client = await clientPromise
+  const db = client.db()
+
+  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  const currentBalance = user.balance || 0
+  if (currentBalance < amount) {
+    throw new Error("Insufficient balance")
+  }
+
+  const newBalance = currentBalance - amount
+  await db.collection("users").updateOne({ _id: new ObjectId(userId) }, { $set: { balance: newBalance } })
+
+  return newBalance
+}
+
+// Admin işlemleri
+export async function getAllUsers(): Promise<User[]> {
+  const client = await clientPromise
+  const db = client.db()
+
+  const users = await db.collection("users").find({}).toArray()
+  return users as User[]
+}
+
+export async function makeUserAdmin(userId: string): Promise<void> {
+  const client = await clientPromise
+  const db = client.db()
+
+  await db.collection("users").updateOne({ _id: new ObjectId(userId) }, { $set: { isAdmin: true } })
+}
+
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  const client = await clientPromise
+  const db = client.db()
+
+  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+  return !!user?.isAdmin
 }

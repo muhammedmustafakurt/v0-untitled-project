@@ -28,6 +28,8 @@ export async function GET() {
         id: user._id,
         email: user.email,
         name: user.name,
+        balance: user.balance || 0,
+        isAdmin: user.isAdmin || false,
       },
     })
   } catch (error) {

@@ -12,6 +12,9 @@ export function middleware(request: NextRequest) {
   // Define public paths that don't require authentication
   const isPublicPath = path === "/login" || path === "/register" || path === "/_next" || path.includes("/api/auth/")
 
+  // Define admin paths
+  const isAdminPath = path.startsWith("/admin") || path.includes("/api/admin/")
+
   // Get the token from the cookies
   const token = request.cookies.get("auth_token")?.value
 
@@ -39,6 +42,22 @@ export function middleware(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
       })
       return response
+    }
+  }
+
+  // If the path is admin and there's a token, check if the user is an admin
+  if (isAdminPath && token) {
+    try {
+      // Verify the token
+      const decoded = verify(token, JWT_SECRET) as { id: string; isAdmin?: boolean }
+
+      // If the user is not an admin, redirect to home
+      if (!decoded.isAdmin) {
+        return NextResponse.redirect(new URL("/", request.url))
+      }
+    } catch (error) {
+      // If token verification fails, redirect to login
+      return NextResponse.redirect(new URL("/login", request.url))
     }
   }
 

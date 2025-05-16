@@ -9,6 +9,8 @@ type User = {
   id: string
   email: string
   name?: string
+  balance: number
+  isAdmin: boolean
 }
 
 type AuthContextType = {
@@ -70,7 +72,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user)
-      router.push("/")
+
+      // Admin kullanıcıları admin paneline yönlendir
+      if (data.user.isAdmin) {
+        router.push("/admin")
+      } else {
+        router.push("/")
+      }
     } catch (e) {
       console.error("Login error", e)
       setError(e instanceof Error ? e.message : "Login failed")

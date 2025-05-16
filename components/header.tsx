@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingBagIcon, UserIcon, LogOutIcon, MenuIcon, XIcon } from "lucide-react"
+import { ShoppingBagIcon, UserIcon, LogOutIcon, MenuIcon, XIcon, ShieldIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useState } from "react"
@@ -42,6 +42,9 @@ export function Header() {
                   Numaralarım
                 </Link>
               </li>
+
+              {user && <li className="font-medium text-white">Bakiye: {user.balance.toFixed(2)} USD</li>}
+
               {user ? (
                 <li>
                   <DropdownMenu>
@@ -60,6 +63,19 @@ export function Header() {
                       <DropdownMenuItem asChild>
                         <Link href="/my-numbers">Numaralarım</Link>
                       </DropdownMenuItem>
+
+                      {user.isAdmin && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin">
+                              <ShieldIcon className="h-4 w-4 mr-2" />
+                              Admin Paneli
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => logout()} className="text-red-600">
                         <LogOutIcon className="h-4 w-4 mr-2" />
@@ -112,6 +128,9 @@ export function Header() {
                   Numaralarım
                 </Link>
               </li>
+
+              {user && <li className="py-2 font-medium text-white">Bakiye: {user.balance.toFixed(2)} USD</li>}
+
               {user ? (
                 <>
                   <li>
@@ -123,6 +142,20 @@ export function Header() {
                       Profil
                     </Link>
                   </li>
+
+                  {user.isAdmin && (
+                    <li>
+                      <Link
+                        href="/admin"
+                        className="block py-2 font-medium text-white hover:text-red-100"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <ShieldIcon className="h-4 w-4 mr-2 inline" />
+                        Admin Paneli
+                      </Link>
+                    </li>
+                  )}
+
                   <li>
                     <button
                       onClick={() => {
