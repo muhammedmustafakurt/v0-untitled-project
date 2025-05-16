@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { verify } from "jsonwebtoken"
+import { jwtVerify } from "jose"
 
+// JWT secret'ı buffer'a çevirme
+const textEncoder = new TextEncoder()
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const secretKey = textEncoder.encode(JWT_SECRET)
 
 // This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Get the pathname
   const path = request.nextUrl.pathname
 
   // Define public paths that don't require authentication
-  const isPublicPath = path === "/login" || path === "/register" || path === "/_next" || path.includes("/api/auth/")
+  const isPublicPath =
+    path === "/login" ||
+    path === "/register" ||
+    path === "/" ||
+    path.startsWith("/_next") ||
+    path.includes("/api/auth/")
 
   // Define admin paths
   const isAdminPath = path.startsWith("/admin") || path.includes("/api/admin/")
@@ -27,7 +35,7 @@ export function middleware(request: NextRequest) {
   if ((path === "/login" || path === "/register") && token) {
     try {
       // Verify the token
-      verify(token, JWT_SECRET)
+      await jwtVerify(token, secretKey)
       return NextResponse.redirect(new URL("/", request.url))
     } catch (error) {
       // If token verification fails, clear the cookie and continue
@@ -49,7 +57,7 @@ export function middleware(request: NextRequest) {
   if (isAdminPath && token) {
     try {
       // Verify the token
-      const decoded = verify(token, JWT_SECRET) as { id: string }
+      await jwtVerify(token, secretKey)
 
       // Admin kontrolü burada yapılmıyor, çünkü middleware'de veritabanı sorgusu yapamıyoruz
       // Bu kontrol API rotalarında yapılacak

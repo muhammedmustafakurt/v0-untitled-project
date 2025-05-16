@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server"
 import { findUserByEmail, validatePassword } from "@/lib/auth"
 import { cookies } from "next/headers"
-import { sign } from "jsonwebtoken"
+import { SignJWT } from "jose"
 
+// JWT secret'ı buffer'a çevirme
+const textEncoder = new TextEncoder()
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const secretKey = textEncoder.encode(JWT_SECRET)
 
 export async function POST(request: Request) {
   try {
@@ -25,14 +28,14 @@ export async function POST(request: Request) {
     }
 
     // Create a JWT token
-    const token = sign(
-      {
-        id: user._id,
-        email: user.email,
-      },
-      JWT_SECRET,
-      { expiresIn: "7d" },
-    )
+    const token = await new SignJWT({
+      id: user._id,
+      email: user.email,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("7d")
+      .sign(secretKey)
 
     // Set the token in a cookie
     cookies().set({

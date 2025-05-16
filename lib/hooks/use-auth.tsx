@@ -6,7 +6,7 @@ import { useState, useEffect, createContext, useContext } from "react"
 import { useRouter } from "next/navigation"
 
 // Define types
-type User = {
+interface User {
   id: string
   email: string
   name?: string
@@ -14,7 +14,7 @@ type User = {
   isAdmin: boolean
 }
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null
   loading: boolean
   error: string | null
@@ -23,8 +23,15 @@ type AuthContextType = {
   logout: () => Promise<void>
 }
 
-// Create context
-const AuthContext = createContext<AuthContextType | null>(null)
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: false,
+  error: null,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+})
 
 // Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -130,25 +137,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Create value object outside of JSX
-  const authContextValue = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-  }
-
-  // Return provider with value
-  return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        login,
+        register,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 // Custom hook to use auth context
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
+  return useContext(AuthContext)
 }

@@ -37,6 +37,9 @@ export async function createUser(userData: Omit<User, "_id">): Promise<User> {
   })
 
   const user = await db.collection("users").findOne({ _id: result.insertedId })
+  if (!user) {
+    throw new Error("Failed to create user")
+  }
   return user as User
 }
 
@@ -52,8 +55,13 @@ export async function findUserById(id: string): Promise<User | null> {
   const client = await clientPromise
   const db = client.db()
 
-  const user = await db.collection("users").findOne({ _id: new ObjectId(id) })
-  return user as User | null
+  try {
+    const user = await db.collection("users").findOne({ _id: new ObjectId(id) })
+    return user as User | null
+  } catch (error) {
+    console.error("Error finding user by ID:", error)
+    return null
+  }
 }
 
 export async function validatePassword(user: User, password: string): Promise<boolean> {
@@ -146,6 +154,11 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
   const client = await clientPromise
   const db = client.db()
 
-  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
-  return !!user?.isAdmin
+  try {
+    const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+    return !!user?.isAdmin
+  } catch (error) {
+    console.error("Error checking if user is admin:", error)
+    return false
+  }
 }

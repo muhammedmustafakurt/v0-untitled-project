@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { verify } from "jsonwebtoken"
+import { jwtVerify } from "jose"
 import { findUserById } from "@/lib/auth"
 
+// JWT secret'ı buffer'a çevirme
+const textEncoder = new TextEncoder()
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const secretKey = textEncoder.encode(JWT_SECRET)
 
 export async function GET() {
   try {
@@ -14,10 +17,11 @@ export async function GET() {
     }
 
     // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: string }
+    const { payload } = await jwtVerify(token, secretKey)
+    const userId = payload.id as string
 
     // Get the user from the database
-    const user = await findUserById(decoded.id)
+    const user = await findUserById(userId)
 
     if (!user) {
       return NextResponse.json({ user: null })
