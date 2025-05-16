@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { RefreshCwIcon, MessageSquareIcon, AlertCircleIcon, CopyIcon, CheckCircleIcon, ClockIcon } from "lucide-react"
+import { RefreshCw, MessageSquare, AlertCircle, Copy, CheckCircle, Clock } from "lucide-react"
 import { formatDate, formatTimeLeft } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -179,7 +179,7 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center text-sm text-gray-500">
-          <ClockIcon className="h-4 w-4 mr-1" />
+          <Clock className="h-4 w-4 mr-1" />
           <span>Kalan süre: {timeLeft}</span>
         </div>
         <Button
@@ -188,7 +188,7 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
           disabled={refreshing || isExpired || isDemo}
           className="flex items-center gap-2"
         >
-          <RefreshCwIcon className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           {isDemo ? "Demo Modu" : "Şimdi Yenile"}
         </Button>
       </div>
@@ -224,7 +224,7 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
       {messages.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
-            <AlertCircleIcon className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+            <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Henüz Mesaj Yok</h3>
             <p className="text-gray-600 mb-4">
               Bu numaraya henüz mesaj almadınız. Mesajlar geldiğinde otomatik olarak burada görünecektir.
@@ -243,7 +243,7 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
               <Card key={message.id} className={verificationCode ? "border-green-200" : ""}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <MessageSquareIcon className="h-5 w-5 text-red-600 mt-1" />
+                    <MessageSquare className="h-5 w-5 text-red-600 mt-1" />
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-1">
                         <div className="font-medium">{message.sender}</div>
@@ -257,9 +257,9 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
                           aria-label="Mesajı kopyala"
                         >
                           {copiedId === message.id ? (
-                            <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                            <CheckCircle className="h-4 w-4 text-green-600" />
                           ) : (
-                            <CopyIcon className="h-4 w-4 text-gray-500" />
+                            <Copy className="h-4 w-4 text-gray-500" />
                           )}
                         </button>
                       </p>
@@ -276,9 +276,9 @@ export function MessageList({ messages: initialMessages, sessionId, expiresAt, i
                             aria-label="Kodu kopyala"
                           >
                             {copiedId === `code-${message.id}` ? (
-                              <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                              <CheckCircle className="h-4 w-4 text-green-600" />
                             ) : (
-                              <CopyIcon className="h-4 w-4 text-green-700" />
+                              <Copy className="h-4 w-4 text-green-700" />
                             )}
                           </button>
                         </div>

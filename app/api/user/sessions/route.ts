@@ -8,7 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 // Add a session to the user's account
 export async function POST(request: Request) {
   try {
-    const { sessionId } = await request.json()
+    const body = await request.json()
+    const { sessionId } = body
     const token = cookies().get("auth_token")?.value
 
     if (!token) {

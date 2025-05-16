@@ -15,9 +15,7 @@ export async function autoRentNumber() {
       throw new Error(errorData.error || "Failed to rent number")
     }
 
-    const data = await response.json()
-    console.log("Auto rent response:", data)
-    return data
+    return await response.json()
   } catch (error) {
     console.error("Error in autoRentNumber client function:", error)
     throw error
@@ -42,9 +40,7 @@ export async function getMessages(sessionId: string) {
       throw new Error(error.message || "Failed to get messages")
     }
 
-    const data = await response.json()
-    console.log("Client: Alınan mesajlar:", data)
-    return data
+    return await response.json()
   } catch (error) {
     console.error("Error in getMessages client function:", error)
     // Return empty array instead of throwing to prevent UI crashes
@@ -66,7 +62,7 @@ export async function getSessionDetails(sessionId: string) {
       throw new Error(error.message || "Failed to get session details")
     }
 
-    return response.json()
+    return await response.json()
   } catch (error) {
     console.error("Error in getSessionDetails client function:", error)
     // Return null instead of throwing to prevent UI crashes

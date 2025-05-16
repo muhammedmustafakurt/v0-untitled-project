@@ -3,7 +3,8 @@ import { createUser } from "@/lib/auth"
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json()
+    const body = await request.json()
+    const { email, password, name } = body
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })

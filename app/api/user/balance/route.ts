@@ -31,7 +31,8 @@ export async function GET() {
 // Update user balance
 export async function POST(request: Request) {
   try {
-    const { amount } = await request.json()
+    const body = await request.json()
+    const { amount } = body
     const token = cookies().get("auth_token")?.value
 
     if (!token) {

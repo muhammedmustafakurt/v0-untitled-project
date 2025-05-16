@@ -8,7 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
 export async function POST(request: Request) {
   try {
-    const { name } = await request.json()
+    const body = await request.json()
+    const { name } = body
     const token = cookies().get("auth_token")?.value
 
     if (!token) {
