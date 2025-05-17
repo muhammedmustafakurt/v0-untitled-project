@@ -1,38 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingBag, User, LogOut, Menu, X, Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/hooks/use-auth"
-import { useState, useEffect } from "react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { ShoppingBag, Menu, X } from "lucide-react"
+import { useState } from "react"
 
 export function Header() {
-  const { user, logout, refreshUser } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  // Debug için log ekledik
-  useEffect(() => {
-    console.log("Header component rendered, user:", user)
-  }, [user])
-
-  // Sayfa yüklendiğinde ve her 30 saniyede bir kullanıcı bilgilerini yenile
-  useEffect(() => {
-    refreshUser()
-
-    const interval = setInterval(() => {
-      refreshUser()
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [refreshUser])
 
   return (
     <header className="border-b bg-red-600 text-white">
@@ -58,61 +31,6 @@ export function Header() {
                   Numaralarım
                 </Link>
               </li>
-
-              {user && (
-                <li className="font-medium text-white">
-                  Bakiye: {user.balance !== undefined ? user.balance.toFixed(2) : "0.00"} TL
-                </li>
-              )}
-
-              {user ? (
-                <li>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="text-white hover:text-red-100 hover:bg-red-700">
-                        <User className="h-5 w-5 mr-2" />
-                        {user.name || user.email}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Hesabım</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile">Profil</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/my-numbers">Numaralarım</Link>
-                      </DropdownMenuItem>
-
-                      {user.isAdmin && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin">
-                              <Shield className="h-4 w-4 mr-2" />
-                              Admin Paneli
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => logout()} className="text-red-600">
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Çıkış Yap
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </li>
-              ) : (
-                <li>
-                  <Link href="/login">
-                    <Button variant="outline" className="bg-white text-red-600 hover:bg-red-50">
-                      Giriş Yap
-                    </Button>
-                  </Link>
-                </li>
-              )}
             </ul>
           </nav>
 
@@ -148,62 +66,6 @@ export function Header() {
                   Numaralarım
                 </Link>
               </li>
-
-              {user && (
-                <li className="py-2 font-medium text-white">
-                  Bakiye: {user.balance !== undefined ? user.balance.toFixed(2) : "0.00"} TL
-                </li>
-              )}
-
-              {user ? (
-                <>
-                  <li>
-                    <Link
-                      href="/profile"
-                      className="block py-2 font-medium text-white hover:text-red-100"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Profil
-                    </Link>
-                  </li>
-
-                  {user.isAdmin && (
-                    <li>
-                      <Link
-                        href="/admin"
-                        className="block py-2 font-medium text-white hover:text-red-100"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Shield className="h-4 w-4 mr-2 inline" />
-                        Admin Paneli
-                      </Link>
-                    </li>
-                  )}
-
-                  <li>
-                    <button
-                      onClick={() => {
-                        logout()
-                        setMobileMenuOpen(false)
-                      }}
-                      className="flex items-center py-2 font-medium text-white hover:text-red-100"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Çıkış Yap
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <li>
-                  <Link
-                    href="/login"
-                    className="block py-2 font-medium text-white hover:text-red-100"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Giriş Yap
-                  </Link>
-                </li>
-              )}
             </ul>
           </nav>
         )}

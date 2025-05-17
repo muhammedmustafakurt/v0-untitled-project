@@ -4,6 +4,34 @@ import { ShoppingBagIcon, CheckCircleIcon, ShieldCheckIcon, ClockIcon } from "lu
 export default function HomePage() {
   return (
     <div>
+      <header className="border-b bg-red-600 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <ShoppingBagIcon className="h-6 w-6 text-white" />
+              <a href="/" className="text-xl font-bold">
+                Yemeksepeti Doğrulama
+              </a>
+            </div>
+
+            <nav>
+              <ul className="flex gap-6 items-center">
+                <li>
+                  <a href="/" className="font-medium text-white hover:text-red-100">
+                    Ana Sayfa
+                  </a>
+                </li>
+                <li>
+                  <a href="/my-numbers" className="font-medium text-white hover:text-red-100">
+                    Numaralarım
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </header>
+
       <section className="bg-gradient-to-b from-red-50 to-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">Yemeksepeti için Doğrulama Numarası</h1>
@@ -82,6 +110,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <footer className="bg-gray-800 text-white py-4">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-gray-400">© 2025 Yemeksepeti Doğrulama. Tüm hakları saklıdır.</p>
+        </div>
+      </footer>
     </div>
   )
 }

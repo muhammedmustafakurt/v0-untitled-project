@@ -3,15 +3,10 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { PhoneIcon, Loader2, CheckCircle, RefreshCw, Copy, AlertCircle } from "lucide-react"
+import { PhoneIcon, Loader2, CheckCircle, RefreshCw, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { autoRentNumber } from "@/lib/api-client"
-import { useAuth } from "@/lib/hooks/use-auth"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-// Numara kiralama ücreti
-const RENTAL_PRICE = 25 // 25 TL olarak güncellendi
 
 export function AutoRentNumber() {
   const [loading, setLoading] = useState(false)
@@ -20,16 +15,10 @@ export function AutoRentNumber() {
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
-  const { user } = useAuth()
 
   const handleRentNumber = async () => {
     setLoading(true)
     try {
-      // Bakiye kontrolü
-      if (user && user.balance < RENTAL_PRICE) {
-        throw new Error(`Yetersiz bakiye. Numara kiralamak için en az ${RENTAL_PRICE} TL bakiyeniz olmalıdır.`)
-      }
-
       const result = await autoRentNumber()
 
       if (result && result.id) {
@@ -39,30 +28,12 @@ export function AutoRentNumber() {
         setPhoneNumber(formattedNumber)
         setSessionId(result.id.toString())
 
-        // If user is logged in, save the session to their account and deduct balance
-        if (user) {
-          try {
-            // Oturumu kullanıcıya kaydet
-            await fetch("/api/user/sessions", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ sessionId: result.id.toString() }),
-            })
+        // Store in localStorage
+        const existingSessions = JSON.parse(localStorage.getItem("sessions") || "[]")
+        localStorage.setItem("sessions", JSON.stringify([...existingSessions, result.id.toString()]))
 
-            // Bakiyeyi düş
-            await fetch("/api/user/balance/deduct", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ amount: RENTAL_PRICE }),
-            })
-          } catch (error) {
-            console.error("Error processing rental:", error)
-          }
-        }
+        // Also set in cookies for server-side access
+        document.cookie = `sessions=${JSON.stringify([...existingSessions, result.id.toString()])}; path=/; max-age=86400`
 
         toast({
           title: "Numara başarıyla kiralandı!",
@@ -129,32 +100,9 @@ export function AutoRentNumber() {
               SMS mesajları almak üzere hemen bir telefon numarası kiralamak için aşağıdaki butona tıklayın.
             </p>
 
-            {user && (
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Mevcut Bakiyeniz:</span>
-                  <span className="font-semibold">{user.balance.toFixed(2)} TL</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Kiralama Ücreti:</span>
-                  <span className="font-semibold">{RENTAL_PRICE.toFixed(2)} TL</span>
-                </div>
-              </div>
-            )}
-
-            {user && user.balance < RENTAL_PRICE && (
-              <Alert variant="warning" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Yetersiz Bakiye</AlertTitle>
-                <AlertDescription>
-                  Numara kiralamak için yeterli bakiyeniz bulunmuyor. Lütfen bakiye yükleyin.
-                </AlertDescription>
-              </Alert>
-            )}
-
             <Button
               onClick={handleRentNumber}
-              disabled={loading || (user && user.balance < RENTAL_PRICE)}
+              disabled={loading}
               size="lg"
               className="bg-red-600 hover:bg-red-700 w-full"
             >
@@ -170,7 +118,6 @@ export function AutoRentNumber() {
                 </>
               )}
             </Button>
-            <p className="text-xs text-gray-500 mt-2">Kullanım ücreti: {RENTAL_PRICE.toFixed(2)} TL</p>
           </div>
         ) : (
           <div className="text-center">
@@ -210,12 +157,7 @@ export function AutoRentNumber() {
                 Mesajları Görüntüle
               </Button>
 
-              <Button
-                onClick={handleRentAnother}
-                variant="outline"
-                className="flex items-center"
-                disabled={user && user.balance < RENTAL_PRICE}
-              >
+              <Button onClick={handleRentAnother} variant="outline" className="flex items-center">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Başka Numara Al
               </Button>
