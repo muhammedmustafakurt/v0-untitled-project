@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { COOKIE_NAME } from "./lib/jwt"
 
 export async function middleware(request: NextRequest) {
   // Get the pathname
@@ -9,6 +10,7 @@ export async function middleware(request: NextRequest) {
   const isPublicPath =
     path === "/login" ||
     path === "/register" ||
+    path === "/" ||
     path.startsWith("/_next") ||
     path.includes("/api/auth/") ||
     path.includes("/favicon.ico") ||
@@ -20,7 +22,7 @@ export async function middleware(request: NextRequest) {
   const isAdminPath = path.startsWith("/admin") || path.includes("/api/admin/")
 
   // Get the token from the cookies
-  const token = request.cookies.get("auth_token")?.value
+  const token = request.cookies.get(COOKIE_NAME)?.value
 
   // If the path is not public and there's no token, redirect to login
   if (!isPublicPath && !token && !isAdminPath) {

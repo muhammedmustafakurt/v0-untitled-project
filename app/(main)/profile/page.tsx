@@ -13,11 +13,16 @@ import { Loader2, CreditCard, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Debug için log ekledik
+  useEffect(() => {
+    console.log("Profile page rendered, user:", user)
+  }, [user])
 
   useEffect(() => {
     if (user) {
@@ -29,7 +34,14 @@ export default function ProfilePage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!user) return
+    if (!user) {
+      toast({
+        title: "Hata",
+        description: "Kullanıcı bilgileri yüklenemedi. Lütfen tekrar giriş yapın.",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       setLoading(true)
@@ -51,6 +63,9 @@ export default function ProfilePage() {
         title: "Başarılı",
         description: "Profil başarıyla güncellendi",
       })
+
+      // Kullanıcı bilgilerini yenile
+      await refreshUser()
     } catch (error) {
       console.error("Error updating profile:", error)
       toast({
@@ -61,6 +76,21 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex justify-center items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+            <p className="text-center mt-4">Kullanıcı bilgileri yükleniyor...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -108,7 +138,9 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="mb-6">
-                <div className="text-3xl font-bold">{user?.balance.toFixed(2)} TL</div>
+                <div className="text-3xl font-bold">
+                  {user.balance !== undefined ? user.balance.toFixed(2) : "0.00"} TL
+                </div>
                 <p className="text-sm text-gray-500">Mevcut bakiyeniz</p>
               </div>
 

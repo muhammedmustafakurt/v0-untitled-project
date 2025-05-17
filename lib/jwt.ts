@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 const secretKey = new TextEncoder().encode(JWT_SECRET)
+const COOKIE_NAME = "user_session_token" // auth_token yerine farklı bir isim kullanıyoruz
 
 export async function createToken(payload: any) {
   try {
@@ -31,7 +32,7 @@ export async function verifyToken(token: string) {
 
 export async function getTokenData() {
   const cookieStore = cookies()
-  const token = cookieStore.get("auth_token")?.value
+  const token = cookieStore.get(COOKIE_NAME)?.value
 
   if (!token) {
     return null
@@ -39,3 +40,5 @@ export async function getTokenData() {
 
   return await verifyToken(token)
 }
+
+export { COOKIE_NAME }

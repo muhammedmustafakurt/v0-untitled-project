@@ -18,6 +18,11 @@ export function Header() {
   const { user, logout, refreshUser } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Debug için log ekledik
+  useEffect(() => {
+    console.log("Header component rendered, user:", user)
+  }, [user])
+
   // Sayfa yüklendiğinde ve her 30 saniyede bir kullanıcı bilgilerini yenile
   useEffect(() => {
     refreshUser()
@@ -54,7 +59,11 @@ export function Header() {
                 </Link>
               </li>
 
-              {user && <li className="font-medium text-white">Bakiye: {user.balance.toFixed(2)} TL</li>}
+              {user && (
+                <li className="font-medium text-white">
+                  Bakiye: {user.balance !== undefined ? user.balance.toFixed(2) : "0.00"} TL
+                </li>
+              )}
 
               {user ? (
                 <li>
@@ -140,7 +149,11 @@ export function Header() {
                 </Link>
               </li>
 
-              {user && <li className="py-2 font-medium text-white">Bakiye: {user.balance.toFixed(2)} TL</li>}
+              {user && (
+                <li className="py-2 font-medium text-white">
+                  Bakiye: {user.balance !== undefined ? user.balance.toFixed(2) : "0.00"} TL
+                </li>
+              )}
 
               {user ? (
                 <>

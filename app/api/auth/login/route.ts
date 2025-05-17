@@ -31,6 +31,15 @@ export async function POST(request: Request) {
     // Set the token in a cookie
     await setAuthCookie(token)
 
+    // Debug için log ekledik
+    console.log("Login successful, user:", {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      balance: user.balance || 0,
+      isAdmin: user.isAdmin || false,
+    })
+
     return NextResponse.json({
       message: "Login successful",
       user: {

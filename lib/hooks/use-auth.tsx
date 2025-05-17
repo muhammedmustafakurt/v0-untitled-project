@@ -65,11 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json()
         if (data.user) {
+          console.log("User data loaded:", data.user) // Debug için log ekledik
           setUser(data.user)
         } else {
+          console.log("No user data found") // Debug için log ekledik
           setUser(null)
         }
       } else {
+        console.log("Failed to load user data, status:", res.status) // Debug için log ekledik
         setUser(null)
       }
     } catch (e) {
@@ -103,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || "Giriş başarısız")
       }
 
+      console.log("Login successful, user data:", data.user) // Debug için log ekledik
       setUser(data.user)
 
       // Admin kullanıcıları admin paneline yönlendir

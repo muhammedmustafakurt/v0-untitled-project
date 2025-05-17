@@ -2,8 +2,16 @@ import { NextResponse } from "next/server"
 import { clearAuthCookie } from "@/lib/auth"
 
 export async function POST() {
-  // Clear the auth cookie
-  await clearAuthCookie()
+  try {
+    // Clear the auth cookie
+    await clearAuthCookie()
 
-  return NextResponse.json({ message: "Logged out successfully" })
+    // Debug için log ekledik
+    console.log("Logout successful, cookie cleared")
+
+    return NextResponse.json({ message: "Logged out successfully" })
+  } catch (error) {
+    console.error("Logout error:", error)
+    return NextResponse.json({ error: "Logout failed" }, { status: 500 })
+  }
 }

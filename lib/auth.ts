@@ -2,6 +2,7 @@ import { compare, hash } from "bcryptjs"
 import clientPromise from "./mongodb"
 import { ObjectId } from "mongodb"
 import { cookies } from "next/headers"
+import { COOKIE_NAME } from "./jwt"
 
 export interface User {
   _id?: string | ObjectId
@@ -198,7 +199,7 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 // Session yönetimi
 export async function setAuthCookie(token: string) {
   cookies().set({
-    name: "auth_token",
+    name: COOKIE_NAME,
     value: token,
     httpOnly: true,
     path: "/",
@@ -210,7 +211,7 @@ export async function setAuthCookie(token: string) {
 
 export async function clearAuthCookie() {
   cookies().set({
-    name: "auth_token",
+    name: COOKIE_NAME,
     value: "",
     httpOnly: true,
     path: "/",
