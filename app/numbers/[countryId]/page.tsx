@@ -2,6 +2,9 @@ import { getPhoneNumbers } from "@/lib/api"
 import { PhoneNumberList } from "@/components/phone-number-list"
 import { mockPhoneNumbers } from "@/components/mock-data"
 
+// Sayfayı dinamik olarak işaretle
+export const dynamic = "force-dynamic"
+
 export default async function CountryNumbersPage({ params }: { params: { countryId: string } }) {
   let phoneNumbers = []
   let error = null

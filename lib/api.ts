@@ -19,7 +19,7 @@ async function apiRequest(endpoint: string, method = "POST", body: any = {}) {
       method,
       headers,
       body: JSON.stringify(body),
-      cache: "no-store",
+      cache: "no-store", // Her zaman yeni veri al
     }
 
     console.log(`Making ${method} request to: ${API_BASE_URL}${endpoint}`)

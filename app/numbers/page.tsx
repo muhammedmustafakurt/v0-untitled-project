@@ -2,6 +2,9 @@ import { getCountries } from "@/lib/api"
 import { CountryList } from "@/components/country-list"
 import { mockCountries } from "@/components/mock-data"
 
+// Sayfayı dinamik olarak işaretle
+export const dynamic = "force-dynamic"
+
 export default async function NumbersPage() {
   let countries = []
   let error = null
