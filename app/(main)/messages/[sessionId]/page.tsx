@@ -4,6 +4,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, PhoneIcon } from "lucide-react"
 
+// Sayfayı dinamik olarak işaretle
+export const dynamic = "force-dynamic"
+
 export default async function SessionMessagesPage({ params }: { params: { sessionId: string } }) {
   let messages = []
   let session = null

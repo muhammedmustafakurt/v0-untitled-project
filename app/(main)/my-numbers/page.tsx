@@ -3,6 +3,10 @@ import { getActiveSessions } from "@/lib/api"
 import { ActiveNumbersList } from "@/components/active-numbers-list"
 import { jwtVerify } from "jose"
 import { getUserSessions } from "@/lib/auth"
+import { COOKIE_NAME } from "@/lib/jwt"
+
+// Sayfayı dinamik olarak işaretle
+export const dynamic = "force-dynamic"
 
 // JWT secret'ı buffer'a çevirme
 const textEncoder = new TextEncoder()
@@ -16,7 +20,7 @@ export default async function MyNumbersPage() {
 
   try {
     // Get the user ID from the auth token
-    const token = cookies().get("auth_token")?.value
+    const token = cookies().get(COOKIE_NAME)?.value
 
     if (token) {
       try {

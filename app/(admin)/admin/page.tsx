@@ -5,6 +5,9 @@ import { AdminNumbersList } from "@/components/admin/numbers-list"
 import { Suspense } from "react"
 import { Loader2 } from "lucide-react"
 
+// Sayfayı dinamik olarak işaretle
+export const dynamic = "force-dynamic"
+
 export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen">
