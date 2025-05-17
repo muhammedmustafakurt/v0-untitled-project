@@ -1,6 +1,7 @@
 import { compare, hash } from "bcryptjs"
 import clientPromise from "./mongodb"
 import { ObjectId } from "mongodb"
+import { cookies } from "next/headers"
 
 export interface User {
   _id?: string | ObjectId
@@ -192,4 +193,29 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
     console.error("Error checking if user is admin:", error)
     return false
   }
+}
+
+// Session yönetimi
+export async function setAuthCookie(token: string) {
+  cookies().set({
+    name: "auth_token",
+    value: token,
+    httpOnly: true,
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 7 gün
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  })
+}
+
+export async function clearAuthCookie() {
+  cookies().set({
+    name: "auth_token",
+    value: "",
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  })
 }

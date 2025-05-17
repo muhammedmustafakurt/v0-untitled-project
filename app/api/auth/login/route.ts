@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server"
-import { findUserByEmail, validatePassword } from "@/lib/auth"
-import { cookies } from "next/headers"
-import { SignJWT } from "jose"
-
-// JWT secret'ı buffer'a çevirme
-const textEncoder = new TextEncoder()
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
-const secretKey = textEncoder.encode(JWT_SECRET)
+import { findUserByEmail, validatePassword, setAuthCookie } from "@/lib/auth"
+import { createToken } from "@/lib/jwt"
 
 export async function POST(request: Request) {
   try {
@@ -28,27 +22,14 @@ export async function POST(request: Request) {
     }
 
     // Create a JWT token
-    const token = await new SignJWT({
+    const token = await createToken({
       id: user._id,
       email: user.email,
       isAdmin: user.isAdmin || false,
     })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("7d")
-      .sign(secretKey)
 
     // Set the token in a cookie
-    const cookieStore = await cookies()
-    cookieStore.set({
-      name: "auth_token",
-      value: token,
-      httpOnly: true,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    })
+    await setAuthCookie(token)
 
     return NextResponse.json({
       message: "Login successful",

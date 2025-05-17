@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, createContext, useContext } from "react"
+import { useState, useEffect, createContext, useContext, useCallback } from "react"
 import { useRouter } from "next/navigation"
 
 // Define types
@@ -46,24 +46,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadUserFromCookies()
 
-    // Refresh user data every 30 seconds
-    const interval = setInterval(() => {
-      loadUserFromCookies()
-    }, 30000)
-
+    // Refresh user data every 5 minutes
+    const interval = setInterval(loadUserFromCookies, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const loadUserFromCookies = async () => {
+  const loadUserFromCookies = useCallback(async () => {
     try {
+      setLoading(true)
       const res = await fetch("/api/auth/me", {
-        method: "GET",
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           Pragma: "no-cache",
           Expires: "0",
         },
-        credentials: "include",
       })
 
       if (res.ok) {
@@ -82,12 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Refresh user data
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     await loadUserFromCookies()
-  }
+  }, [loadUserFromCookies])
 
   // Login function
   const login = async (email: string, password: string) => {
@@ -99,7 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include",
       })
 
       const data = await res.json()
@@ -109,7 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user)
-      await loadUserFromCookies() // Immediately refresh user data after login
 
       // Admin kullanıcıları admin paneline yönlendir
       if (data.user.isAdmin) {
@@ -135,7 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),
-        credentials: "include",
       })
 
       const data = await res.json()
@@ -158,10 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true)
-      await fetch("/api/auth/logout", { 
-        method: "POST",
-        credentials: "include",
-      })
+      await fetch("/api/auth/logout", { method: "POST" })
       setUser(null)
       router.push("/login")
     } catch (e) {
